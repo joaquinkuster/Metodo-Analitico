@@ -20,7 +20,8 @@ Este repositorio contiene la implementación de distintos algoritmos para la gen
 
 ## 🧠 Algoritmos implementados
 
-- ...
+- Método Von Neumann
+- Método multiplicativo de congruencias
 
 ## 📂 Estructura del proyecto
 
