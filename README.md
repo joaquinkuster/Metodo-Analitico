@@ -1,5 +1,4 @@
-# numeros-pseudoaleatorios
-
+# Números pseudoaleatorios
 
 
 ## Getting started
