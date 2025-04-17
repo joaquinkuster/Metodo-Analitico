@@ -1,7 +1,6 @@
-# Modelo y simulación
+# G02 - 2025 MS - Método Analítico
 
-
-# Tema 1: Números Pseudoaleatorios
+# Números Pseudoaleatorios
 
 Este repositorio contiene la implementación de distintos algoritmos para la generación de números **pseudoaleatorios**. El objetivo del proyecto es estudiar, analizar y comparar diversos métodos para generar secuencias numéricas que aparenten aleatoriedad utilizando procedimientos determinísticos.
 
@@ -15,14 +14,10 @@ Este repositorio contiene la implementación de distintos algoritmos para la gen
 ## ⚙️ Tecnologías y Lenguaje
 
 - Lenguaje de programación: `Python`
-- Herramientas: GitLab, Github
+- Herramientas: GitLab, Django, SQLite3, Bootstrap
 - Editor: VSCode
 
 ## 🧠 Algoritmos implementados
 
 - Método Von Neumann
-- Método multiplicativo de congruencias
-
-## 📂 Estructura del proyecto
-
-...
+- Método Multiplicativo de Congruencias
