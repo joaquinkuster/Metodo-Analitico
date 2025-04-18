@@ -1,0 +1,11 @@
+.menu-principal {
+    height: 80vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.form-inactivo {
+    display: none;
+}
