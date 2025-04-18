@@ -14,13 +14,16 @@ class TipoGenerador(models.TextChoices):
 def validar_numeros(numeros):
     if not isinstance(numeros, list) or not numeros:
         raise ValidationError("La lista de números no puede estar vacía.")
+    for numero in numeros:
+        if not isinstance(numero, (int)):
+            raise ValidationError(f"El valor '{numero}' no es un número válido.")
 
 # Validador para la cantidad
 def validar_cantidad(cantidad):
      if not (1 <= cantidad <= 100): 
             raise ValidationError("La cantidad debe ser mayor a 0 y menor o igual a 100.")
 
-class GeneradorBase(models.Model):
+class SecuenciaBase(models.Model):
     id = models.IntegerField(primary_key=True)
     tipo = models.CharField(
         max_length=2,
@@ -35,15 +38,19 @@ class GeneradorBase(models.Model):
         abstract = True
         
     def __str__(self):
-        return self.numeros
+        return f"{self.numeros}"
 
-class VonNeumann(GeneradorBase):
+class VonNeumann(SecuenciaBase):
     def validar_campos(self):
         if not (1000 <= self.semilla <= 9999):
                 raise ValidationError({
                     "semilla": "La semilla para Von Neumann debe tener exactamente 4 dígitos."
                 })
-                
+        if str(self.semilla)[2:] == '00':
+            raise ValidationError({
+                "semilla": "Los dos últimos dígitos de la semilla no pueden ser '00'."
+            })
+                 
     def save(self, *args, **kwargs):
         self.tipo = TipoGenerador.VON_NEUMANN
         self.validar_campos()
@@ -52,8 +59,9 @@ class VonNeumann(GeneradorBase):
 
     def generar_numeros(self):
         self.numeros = generadores.von_neumann(self.semilla, self.cantidad)
+        validar_numeros(self.numeros)
 
-class CongruencialMultiplicativo(GeneradorBase):
+class CongruencialMultiplicativo(SecuenciaBase):
     t = models.PositiveIntegerField()
     p = models.PositiveIntegerField()
     modulo = models.PositiveIntegerField()
@@ -123,5 +131,6 @@ class CongruencialMultiplicativo(GeneradorBase):
             self.modulo,
             self.cantidad
         )
+        validar_numeros(self.numeros)
 
     
