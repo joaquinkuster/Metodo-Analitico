@@ -22,6 +22,11 @@ def generador_numeros_aleatorios_neumann(seed, cantidad):
 
     # tomar las 4 cifras del medio
     nuevo_seed = cuadrado[2:6]
+    
+    if nuevo_seed.endswith("00") or nuevo_seed == "0000":
+        
+        return "semilla invalida"
+    
     numeros.append(nuevo_seed)
 
     # casos base
