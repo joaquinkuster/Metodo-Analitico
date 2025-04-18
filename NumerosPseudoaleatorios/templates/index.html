@@ -1,0 +1,13 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Metodo Analitico {% endblock %}
+
+{% block body %}
+<div class="menu-principal text-center">
+    <h1 class="fw-bold">G02 - 2025 MS - Método Analítico</h1>
+    <div class="d-grid gap-4 col-8 col-md-4 mx-auto">
+        <a href="{% url 'secuencia:generar' %}" class="btn btn-primary btn-lg">Generar números pseudoaleatorios</a>
+        <a href="{% url 'secuencia:generar' %}" class="btn btn-outline-primary btn-lg">Testear aleatoriedad</a>
+    </div>
+</div>
+{% endblock %}

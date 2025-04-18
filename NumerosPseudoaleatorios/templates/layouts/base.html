@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="es">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>G02 - 2025 MS - {% block title %} {% endblock %}</title>
+    {% include "layouts/styles.html" %}
+</head>
+
+<body>
+    {% include "layouts/navbar.html" %}
+
+    <div class="container mt-5">
+        {% block body %}
+    
+        {% endblock %}
+    </div>
+    {% include "layouts/scripts.html" %}
+</body>
+
+</html>
