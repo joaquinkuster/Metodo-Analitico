@@ -95,6 +95,10 @@
                                 <input class="form-check-input" type="radio" name="metodo" id="poker" value="poker" {% if metodo == 'poker' %}checked{% endif %}>
                                 <label class="form-check-label" for="poker">Poker</label>
                             </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-checked" type="number" name="significancia" id="significancia" value="{{ significancia }}" step="0.01" min="0.01" max="1.00" required>
+                                <label class="form-check-label" for="significancia">Significancia</label>
+                            </div>
                             <button type="submit" class="btn btn-primary ms-3">Testear</button>
                         </form>
                 </div>
@@ -121,7 +125,6 @@
             const form = document.querySelector('form');
             form.addEventListener('submit', function (event) {
                 const metodo = document.querySelector('input[name="metodo"]:checked').value;
-                if (metodo === 'poker') {
                     event.preventDefault(); // Evita el envío inmediato del formulario
                     const numeros = document.querySelectorAll('#numeros-container .numero');
                     let delay = 0;
@@ -145,17 +148,18 @@
                                 .then(data => {
                                     // Actualiza los resultados en la página
                                     numeros.forEach((numero, index) => {
-                                        {% if data.resultados.aprueba %}
-                                        numero.style.color = 'green';
-                                        {% else %}
-                                        numero.style.color = 'red';
-                                        {% endif %}
+                                        if (data.resultados.aprueba) {
+                                            numero.style.color = 'green'; // Cambia el color del número a verde
+                                        } else {
+                                            numero.style.color = 'red'; // Cambia el color del número a rojo
+                                        }
                                         numero.style.backgroundColor = '';
                                         numero.style.fontWeight = ''; 
                                     });
                                     const resultadosContainer = document.getElementById('resultados-container');
-                                    resultadosContainer.innerHTML = ''; // Limpia el contenedor de resultados
-                                    resultadosContainer.innerHTML = `
+                                    resultadosContainer.innerHTML = '';
+                                    if (metodo === 'poker') {
+                                        resultadosContainer.innerHTML = `
                                         <p class="text-muted mb-0">Valor Chi Cuadrado: <strong>${data.resultados.valor_chi2}</strong></p>
                                         <p class="text-muted mb-0">Valor Crítico: <strong>${data.resultados.valor_critico}</strong></p>
                                         
@@ -165,6 +169,16 @@
                                             Resultado: <strong>${data.resultados.aprueba ? 'Aprobado' : 'No Aprobado'}</strong>
                                         </p>
                                     `;
+                                    } else if (metodo === 'chi_cuadrado') {
+                                        resultadosContainer.innerHTML = `
+                                        <p class="text-muted mb-0">Valor Chi Cuadrado: <strong>${data.resultados.valor_chi2}</strong></p>
+                                        <p class="text-muted mb-0">Valor Crítico: <strong>${data.resultados.valor_critico}</strong></p>
+                                        <p class="${data.resultados.aprueba ? 'text-success' : 'text-danger'} mb-0">
+                                            Resultado: <strong>${data.resultados.aprueba ? 'Aprobado' : 'No Aprobado'}</strong>
+                                        </p>
+                                    `;
+                                    }
+
                                 })
                                 .catch(error => {
                                     console.error('Error al enviar los datos:', error);
@@ -173,7 +187,6 @@
                         }, delay);
                         delay += 20; // Incrementa el retraso para cada número (500ms por número)
                     });
-                }
             });
         });
     </script>

@@ -11,14 +11,14 @@ def chi_cuadrado_test(observadas, esperadas, significancia):
     # calculamos el valor de chi cuadrado utilizando la formula 
     chi_value = sum((o - e)**2 / e for o, e in zip(observadas, esperadas) if e > 0)
     # calculamos el valor critico de chi cuadrado
-    chi_crit = chi2.ppf(significancia, df)
+    chi_crit = chi2.ppf(1 - float(significancia), df)
     # comprobamos si se acepta la hipotesis nula
     pasa = chi_value < chi_crit or isclose(chi_value, chi_crit)
     # de volvemos el valor del chi cuadrado, el valor critico, y un booleano que nos dice si se acepta o se rechaza H0
     return chi_value, chi_crit, pasa
 
 #   Realiza la prueba de Poker a una lista de números pseudoaleatorios.
-def test_poker(numeros: list[int], significancia: float = 0.05):
+def test_poker(significancia, numeros: list[int]):
 
     # transformamos la lista de numeros a numeros de 5 cifras
     numeros = unir_numeros_como_string(numeros)
@@ -68,9 +68,9 @@ def test_poker(numeros: list[int], significancia: float = 0.05):
     chi, crit, pasa = chi_cuadrado_test(obs_list, esperadas, significancia)
 
     return {
-        "frecuencia_observada": observadas,
-        "frecuencia_esperada": dict(zip(categorias, esperadas)),
+        "frecuencia_observada": {k: int(v) for k, v in observadas.items()},  # Asegurar que sean enteros
+        "frecuencia_esperada": {k: round(v, 4) for k, v in zip(categorias, esperadas)},  # Redondear valores
         "valor_chi2": round(chi, 4),
         "valor_critico": round(crit, 4),
-        "aprueba": pasa
+        "aprueba": bool(pasa)  # Asegurar que sea un booleano
     }

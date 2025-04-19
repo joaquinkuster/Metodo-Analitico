@@ -6,6 +6,7 @@ from .models import TipoGenerador, VonNeumann, CongruencialMultiplicativo
 from .forms import VonNeumannForm, CongruencialMultiplicativoForm
 from django.views.decorators.http import require_POST
 from .testers.poquer import test_poker
+from .testers.chiCuadrado import chi_squared_test
 from django.http import JsonResponse, HttpResponseNotAllowed
 
 # Create your views here.
@@ -103,7 +104,7 @@ def testear_secuencia(request, id, tipo):
         secuencia = None
         resultados = None
         metodo = request.POST.get("metodo", None)  # Obtener el método seleccionado del formulario
-
+        significancia = request.POST.get("significancia", None)  # Obtener el nivel de significancia del formulario
         if tipo == TipoGenerador.VON_NEUMANN:
             secuencia = VonNeumann.objects.get(id=id)
         elif tipo == TipoGenerador.CONGRUENCIAL_MULTIPLICATIVO:
@@ -116,16 +117,21 @@ def testear_secuencia(request, id, tipo):
         # Procesar el formulario si se envió
         if request.method == 'POST' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             numeros = secuencia.numeros
-
             if metodo == "poker":
-                resultados = test_poker(numeros)
+                resultados = test_poker(significancia, numeros)
                 if resultados == None:
                     messages.error(request, "Error al realizar la prueba de Poker.")
                 else:
                     messages.success(request, "Prueba de Poker realizado correctamente!")
             elif metodo == "chi_cuadrado":
-                # Aquí puedes integrar la lógica del test de Chi Cuadrado en el futuro
-                resultados = {"mensaje": "Test de Chi Cuadrado aún no implementado."}
+                resultados = chi_squared_test(significancia, numeros, num_intervals=10)
+                if resultados == None:
+                    messages.error(request, "Error al realizar la prueba de Chi Cuadrado.")
+                else:
+                    messages.success(request, "Prueba de Chi Cuadrado realizado correctamente!")
+            else:
+                messages.error(request, "Método de prueba no válido.")
+                return HttpResponseNotAllowed(['POST'])
 
             # Respuesta JSON con los resultados
             return JsonResponse({
