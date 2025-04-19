@@ -14,9 +14,9 @@ def von_neumann(semilla, cantidad, numeros=None):
 
     nueva_semilla = cuadrado[2:6]  # toma las 4 cifras del medio
 
-    # Sumar 13 si termina en '00'
+    # agregamos '13' si termina en '00'
     if nueva_semilla[2:] == '00':
-        nueva_semilla = str(int(nueva_semilla) + 13).zfill(4)  # actualiza y vuelve a rellenar
+        nueva_semilla = nueva_semilla[:2] + "13"
 
     numeros.append(int(nueva_semilla))
 

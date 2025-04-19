@@ -180,6 +180,10 @@
                                     </td>
                                     <td>
                                         <div class="btn-group btn-group-sm">
+                                            <a href="{% url 'secuencia:testear' s.id s.tipo %}" class="btn btn-info"
+                                                title="Testear numeros generados">
+                                                <i class="fas fa-vial align-middle"></i>
+                                            </a>
                                             <a href="{% url 'secuencia:ver' s.id s.tipo %}" class="btn btn-primary"
                                                 title="Ver detalles">
                                                 <i class="fas fa-eye align-middle"></i>

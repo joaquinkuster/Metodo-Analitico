@@ -1,6 +1,7 @@
 from math import isclose
 from scipy.stats import chi2
 from collections import Counter
+from .funcionesPoquer import unir_numeros_como_string, separar_en_bloques_de_5
 
 
 # funcion para prueba de chi cuadrado
@@ -17,8 +18,11 @@ def chi_cuadrado_test(observadas, esperadas, significancia):
     return chi_value, chi_crit, pasa
 
 #   Realiza la prueba de Poker a una lista de números pseudoaleatorios.
-def test_poker(numbers: list[int], significancia: float = 0.05):
+def test_poker(numeros: list[int], significancia: float = 0.05):
 
+    # transformamos la lista de numeros a numeros de 5 cifras
+    numeros = unir_numeros_como_string(numeros)
+    numeros = separar_en_bloques_de_5(numeros)
     # Categorías de manos
     categorias = ["todos_diferentes", "un_par", "dos_pares", "tercia", "full", "quintilla"]
 
@@ -37,7 +41,7 @@ def test_poker(numbers: list[int], significancia: float = 0.05):
     
     
 
-    for numero in numbers:
+    for numero in numeros:
         
         conteo = sorted(Counter(numero).values(), reverse=True)
 
@@ -57,7 +61,7 @@ def test_poker(numbers: list[int], significancia: float = 0.05):
         elif conteo == [1, 1, 1, 1, 1]:
             observadas["todos_diferentes"] += 1
             
-    total = len(numbers)
+    total = len(numeros)
     esperadas = [total * probabilidades[cat] for cat in categorias]
     obs_list = [observadas[cat] for cat in categorias]
     

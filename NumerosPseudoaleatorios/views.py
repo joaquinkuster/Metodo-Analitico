@@ -5,6 +5,8 @@ from django.core.exceptions import ValidationError
 from .models import TipoGenerador, VonNeumann, CongruencialMultiplicativo
 from .forms import VonNeumannForm, CongruencialMultiplicativoForm
 from django.views.decorators.http import require_POST
+from .testers.poquer import test_poker
+from django.http import JsonResponse, HttpResponseNotAllowed
 
 # Create your views here.
 
@@ -86,7 +88,7 @@ def ver_secuencia(request, id, tipo):
         secuencia = CongruencialMultiplicativo.objects.get(id=id)
 
     if secuencia is None:
-        messages.error(request, "No se encontró la secuencia a eliminar.")
+        messages.error(request, "No se encontró la secuencia para visualizar.")
         return redirect("secuencia:generar")
 
     return render(
@@ -96,3 +98,47 @@ def ver_secuencia(request, id, tipo):
             "secuencia": secuencia,
         },
     )
+
+def testear_secuencia(request, id, tipo):
+        secuencia = None
+        resultados = None
+        metodo = request.POST.get("metodo", None)  # Obtener el método seleccionado del formulario
+
+        if tipo == TipoGenerador.VON_NEUMANN:
+            secuencia = VonNeumann.objects.get(id=id)
+        elif tipo == TipoGenerador.CONGRUENCIAL_MULTIPLICATIVO:
+            secuencia = CongruencialMultiplicativo.objects.get(id=id)
+
+        if secuencia is None:
+            messages.error(request, "No se encontró la secuencia para testear.")
+            return redirect("secuencia:generar")
+
+        # Procesar el formulario si se envió
+        if request.method == 'POST' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            numeros = secuencia.numeros
+
+            if metodo == "poker":
+                resultados = test_poker(numeros)
+                if resultados == None:
+                    messages.error(request, "Error al realizar la prueba de Poker.")
+                else:
+                    messages.success(request, "Prueba de Poker realizado correctamente!")
+            elif metodo == "chi_cuadrado":
+                # Aquí puedes integrar la lógica del test de Chi Cuadrado en el futuro
+                resultados = {"mensaje": "Test de Chi Cuadrado aún no implementado."}
+
+            # Respuesta JSON con los resultados
+            return JsonResponse({
+                "resultados": resultados,
+                "metodo": metodo,
+                "mensaje": "Prueba realizada correctamente." if resultados else "Error al realizar la prueba."
+            })
+        return render(
+            request,
+            "pages/secuencia/testear.html",
+            {
+                "secuencia": secuencia,
+                "resultados": resultados,
+                "metodo": metodo,
+            },
+        )
