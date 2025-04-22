@@ -117,6 +117,10 @@ class CongruencialMultiplicativo(SecuenciaBase):
             raise ValidationError({
                 "modulo": f"El módulo debe ser mayor que el multiplicador (a) = {self.multiplicador}."
             })     
+        if self.modulo == self.multiplicador + 1:
+            raise ValidationError({
+                "modulo": f"El módulo no puede ser exactamente uno más que el multiplicador (a), es decir: {self.multiplicador + 1}."
+            })
 
     def save(self, *args, **kwargs):
         self.tipo = TipoGenerador.CONGRUENCIAL_MULTIPLICATIVO
