@@ -1,7 +1,9 @@
-﻿################################################################################
-# Este archivo .gitignore ha sido creado automáticamente por Microsoft(R) Visual Studio.
-################################################################################
-
+# Archivos de configuraci�n de Visual Studio
 /.vs
 /Trabajo Integrador.pyproj
 /Trabajo Integrador.sln
+*.json
+
+# Otros archivos temporales
+__pycache__/
+*.pyc
