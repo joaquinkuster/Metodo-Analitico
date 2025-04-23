@@ -63,8 +63,6 @@ def test_poker(significancia, numeros: list[int]):
         # Clasificación
         if conteo == [5]:
             observadas["quintilla"] += 1
-        elif conteo == [4, 1]:
-            observadas["poker"] += 1
         elif conteo == [3, 2]:
             observadas["full"] += 1
         elif conteo == [3, 1, 1]:
