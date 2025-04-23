@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-*.pyc
-__pycache__/
-=======
-# Archivos de configuración de Visual Studio
+# Archivos de configuraciï¿½n de Visual Studio
 /.vs
 /Trabajo Integrador.pyproj
 /Trabajo Integrador.sln
@@ -11,4 +7,3 @@ __pycache__/
 # Otros archivos temporales
 __pycache__/
 *.pyc
->>>>>>> main
