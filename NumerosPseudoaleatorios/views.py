@@ -2,7 +2,7 @@ from django import forms
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.core.exceptions import ValidationError
-from .models import TipoGenerador, VonNeumann, CongruencialMultiplicativo
+from .models import TipoGenerador, VonNeumann, CongruencialMultiplicativo, TesterBase
 from .forms import VonNeumannForm, CongruencialMultiplicativoForm, TestNumerosForm
 from django.views.decorators.http import require_POST
 from .testers.poquer import test_poker
@@ -33,7 +33,7 @@ def generar_secuencia(request):
         elif tipo == TipoGenerador.CONGRUENCIAL_MULTIPLICATIVO:
             congruencial_form = CongruencialMultiplicativoForm(request.POST)
             form = congruencial_form
-
+            
         if form.is_valid():
             try:
                 # Guardar la secuencia (las validaciones están en el modelo)
@@ -105,151 +105,114 @@ def ver_secuencia(request, id, tipo):
 
 # Funciones para gestionar los tests
 
-
-# def ver_test(request, id, tipo):
-#     secuencia = None
-#     test = None
-#     resultados = None
-#     metodo = request.POST.get("metodo", None)  # Obtener el método seleccionado del formulario
-#     significancia = request.POST.get("significancia", None)  # Obtener el nivel de significancia del formulario
-
-#     if test is None:
-#         messages.error(request, "No se encontró el test para visualizar.")
-#         return redirect("test:generar")
-
-
-#     return render(
-#         request,
-#         "pages/test/ver.html",
-#         {
-#             "secuencia": secuencia,
-#             "resultados": resultados,
-#             "metodo": metodo,
-#         },
-#     )
-
 def generar_test(request):
     # Inicializar el formulario
     test_form = TestNumerosForm()
-    tipo = request.POST.get("tipo_generador") or None
     form = None
-    test = None
+    tests = []
 
     # Procesar POST
     if request.method == "POST":
-        test_form = TestNumerosForm(request.POST)
-        form = test_form
-
+        form = TestNumerosForm(request.POST)
         if form.is_valid():
             try:
-                # Guardar la secuencia (las validaciones están en el modelo)
-                secuencia = form.save(commit=False)
-                secuencia.save()
+                
+                # realizamos el test pasando a la funcion de test de poker la secuencia
+                # y la significancia
+                secuencia = form.cleaned_data["secuencia"]
+                significancia = form.cleaned_data["significancia"]
+                tipo = form.cleaned_data["tipo"]
+                if tipo == "PK":
+                    resultados = test_poker(significancia, secuencia.numeros)
+                elif tipo == "CC":
+                    resultados = chi_squared_test(significancia, secuencia.numeros, num_intervals=10)
+                else:
+                    messages.error(request, "Tipo de prueba no válido.")
+                    return HttpResponseNotAllowed(['POST'])
+                
+                test = TesterBase(
+                    tipo=tipo,
+                    significancia=significancia,
+                    estadistico_prueba=resultados["estadistico_prueba"],
+                    valor_critico=resultados["valor_critico"],
+                    aprobado=resultados["aprobado"],
+                    frecuencias_observadas=resultados["frecuencias_observadas"],
+                    secuencia=secuencia,
+                    pvalor=resultados["pvalor"],
+                )
+                
+                test.validar_datos()  # Validar los datos del test antes de guardarlo
+                test.save()
+                
                 messages.success(request, "Test generado exitosamente!")
             except ValidationError as e:
                 # para cada campo y cada error, lo añadimos al form
                 for field, errs in e.message_dict.items():
                     for err in errs:
                         form.add_error(field, err)
+                
+    # Obtener todos los tests usando GeneradorBase
+    tests = list(TesterBase.objects.all())
+    tests.sort(key=lambda x: x.fecha_creacion, reverse=True)
 
     return render(
         request,
         "pages/test/generar.html",
         {
             "test_form": test_form,
-            "tipo_generador": tipo,
-            "tests": test,	
+            "tests": tests,	
         },
     )
 
+def eliminar_test(request, id):
+    test = None
 
-def testear_secuencia(request, id, tipo):
-        secuencia = None
-        resultados = None
-        metodo = request.POST.get("metodo", None)  # Obtener el método seleccionado del formulario
-        significancia = request.POST.get("significancia", None)  # Obtener el nivel de significancia del formulario
-        if tipo == TipoGenerador.VON_NEUMANN:
-            secuencia = VonNeumann.objects.get(id=id)
-        elif tipo == TipoGenerador.CONGRUENCIAL_MULTIPLICATIVO:
-            secuencia = CongruencialMultiplicativo.objects.get(id=id)
-
-        if secuencia is None:
-            messages.error(request, "No se encontró la secuencia para testear.")
-            return redirect("secuencia:generar")
-
-        # Procesar el formulario si se envió
-        if request.method == 'POST' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            numeros = secuencia.numeros
-            if metodo == "poker":
-                resultados = test_poker(significancia, numeros)
-                if resultados == None:
-                    messages.error(request, "Error al realizar la prueba de Poker.")
-                else:
-                    messages.success(request, "Prueba de Poker realizado correctamente!")
-            elif metodo == "chi_cuadrado":
-                resultados = chi_squared_test(significancia, numeros, num_intervals=10)
-                if resultados == None:
-                    messages.error(request, "Error al realizar la prueba de Chi Cuadrado.")
-                else:
-                    messages.success(request, "Prueba de Chi Cuadrado realizado correctamente!")
-            else:
-                messages.error(request, "Método de prueba no válido.")
-                return HttpResponseNotAllowed(['POST'])
-
-            # Respuesta JSON con los resultados
-            return JsonResponse({
-                "resultados": resultados,
-                "metodo": metodo,
-                "mensaje": "Prueba realizada correctamente." if resultados else "Error al realizar la prueba."
-            })
-        return render(
-            request,
-            "pages/test/generar.html",
-            {
-                "secuencia": secuencia,
-                "resultados": resultados,
-                "metodo": metodo,
-            },
-        )
-
-def eliminar_test(request, id, tipo):
-    secuencia = None
-
-    if tipo == TipoGenerador.VON_NEUMANN:
-        secuencia = VonNeumann.objects.get(id=id)
-    elif tipo == TipoGenerador.CONGRUENCIAL_MULTIPLICATIVO:
-        secuencia = CongruencialMultiplicativo.objects.get(id=id)
-
-    if secuencia is None:
-        messages.error(request, "No se encontró la secuencia a eliminar.")
+    test = TesterBase.objects.get(id=id)
+    
+    if test is None:
+        messages.error(request, "No se encontró el test a eliminar.")
         return redirect("test:generar")
-
-    secuencia.delete()
-    messages.success(request, "Secuencia eliminada exitosamente.")
+    
+    test.delete()
+    
+    messages.success(request, "Test eliminado exitosamente.")
     return redirect("test:generar")
 
-def ver_test(request, id, tipo):
-    secuencia = None
-    test = None
-    resultados = None
-    metodo = request.POST.get("metodo", None)  # Obtener el método seleccionado del formulario
-    significancia = request.POST.get("significancia", None)  # Obtener el nivel de significancia del formulario
+def ver_test(request, id):
+    test = TesterBase.objects.get(id=id)
 
-    if tipo == TipoGenerador.VON_NEUMANN:
-        secuencia = VonNeumann.objects.get(id=id)
-    elif tipo == TipoGenerador.CONGRUENCIAL_MULTIPLICATIVO:
-        secuencia = CongruencialMultiplicativo.objects.get(id=id)
-
-    if secuencia is None:
-        messages.error(request, "No se encontró la secuencia para visualizar.")
+    if test is None:
+        messages.error(request, "No se encontró el test para visualizar.")
         return redirect("test:generar")
 
     return render(
         request,
         "pages/test/ver.html",
         {
-            "secuencia": secuencia,
-            "resultados": resultados,
-            "metodo": metodo,
+            "test": test
+        },
+    )
+
+def testear_secuencia(request, id, tipo):
+    # Obtener la secuencia según el tipo
+    if tipo == TipoGenerador.VON_NEUMANN:
+        secuencia = VonNeumann.objects.get(id=id)
+    elif tipo == TipoGenerador.CONGRUENCIAL_MULTIPLICATIVO:
+        secuencia = CongruencialMultiplicativo.objects.get(id=id)
+    else:
+        messages.error(request, "Tipo de secuencia no válido.")
+        return redirect("secuencia:generar")
+
+    # Crear el formulario con la secuencia preseleccionada
+    test_form = TestNumerosForm(initial={
+        "secuencia": secuencia.id
+    })
+
+    return render(
+        request,
+        "pages/test/generar.html",
+        {
+            "test_form": test_form,
+            "tests": TesterBase.objects.all().order_by("-fecha_creacion"),
         },
     )

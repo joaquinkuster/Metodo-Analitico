@@ -33,11 +33,11 @@ def chi_squared_test(significancia, numeros: list[int], num_intervals=10):
     p_valor = 1 - chi2.cdf(chi_value, df)
 
     return {
-        "valor_chi2": round(chi_value, 4), 
+        "estadistico_prueba": round(chi_value, 4), 
         "valor_critico": round(critical_value, 4), 
-        "p_valor": round(p_valor, 4),
-        "aprueba": bool(chi_value < critical_value),
+        "pvalor": round(p_valor, 4),
+        "aprobado": bool(chi_value < critical_value),
         "intervalos": [f"{round(intervalos[i], 2)}-{round(intervalos[i+1], 2)}" for i in range(num_intervals)],
-        "frecuencia_observada": observadas,
-        "frecuencia_esperada": esperadas
+        "frecuencias_observadas": observadas,
+        "frecuencias_esperadas": esperadas
     }

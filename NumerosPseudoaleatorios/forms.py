@@ -1,5 +1,5 @@
 from django import forms
-from .models import VonNeumann, CongruencialMultiplicativo, VALORES_P_VALIDOS, SecuenciaBase, TipoTester
+from .models import TesterBase, VonNeumann, CongruencialMultiplicativo, VALORES_P_VALIDOS, SecuenciaBase, TipoTester
 
 
 class VonNeumannForm(forms.ModelForm):
@@ -70,28 +70,30 @@ class CongruencialMultiplicativoForm(forms.ModelForm):
         # Usar los valores válidos del modelo para el campo p
         self.fields["p"].widget.choices = [(x, x) for x in VALORES_P_VALIDOS]
 
-class TestNumerosForm(forms.Form):
-    tipo_test = forms.ChoiceField(
-        choices=TipoTester.choices,
-        widget=forms.RadioSelect,
-        label="Tipo de prueba",
-        required=True
-    )
-    
-    secuencia = forms.ModelChoiceField(
-        queryset=SecuenciaBase.objects.all(),
-        label="Secuencia",
-        required=True,
-        help_text="Seleccione una secuencia existente de la base de datos"
-    )
-    
-    significancia = forms.DecimalField(
-        max_digits=5,
-        decimal_places=4,
-        min_value=0.001,
-        max_value=0.1,
-        initial=0.05,
-        label="Nivel de significancia",
-        required=True,
-        help_text="Ingrese un nivel de significancia entre 0.001 y 0.1"
-    )
+class TestNumerosForm(forms.ModelForm):
+    class Meta:
+        model = TesterBase
+        fields = ["tipo", "secuencia", "significancia"]
+        widgets = {
+            "tipo": forms.Select(
+                choices=[(x, x) for x in TipoTester],
+                attrs={"placeholder": "Tipo de test"},
+            ),
+            "secuencia": forms.Select(
+                choices=[(x.id, str(x)) for x in SecuenciaBase.objects.all()],
+                attrs={"placeholder": "Secuencia a testear"},
+            ),
+            "significancia": forms.NumberInput(
+                attrs={
+                    "min": 0.01,
+                    "max": 0.1,
+                    "value": 0.05,
+                    "required": True,
+                }
+            ),
+        }
+        labels = {
+            "tipo": "Tipo de test",
+            "secuencia": "Secuencia a testear",
+            "significancia": "Nivel de significancia",
+        }

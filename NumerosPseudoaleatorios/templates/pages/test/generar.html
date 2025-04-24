@@ -33,25 +33,14 @@
                         {% csrf_token %}
                         <!-- Tipo de Test -->
                         <div class="mb-3">
-                            <label for="{{ test_form.tipo_test_label }}" class="form-label fw-bold">
-                                {{ test_form.tipo_test.label }}
+                            <label for="{{ test_form.tipo.label }}" class="form-label fw-bold">
+                                {{ test_form.tipo.label }}
                             </label>
-                            <div class="mb-4">
-                                <div class="btn-group w-100" role="group">
-                                    <button type="button"
-                                        class="btn btn-outline-primary"
-                                        id="btn-poker">
-                                        Poker
-                                    </button>
-                                    <button type="button"
-                                        class="btn btn-outline-primary"
-                                        id="btn-chi-cuadrado">
-                                        Chi-cuadrado
-                                    </button>
-                                </div>
-                            </div>
-                            {% if test_form.tipo_test.errors %}
-                            <div class="invalid-feedback d-block">{{ test_form.tipo_test.errors.0 }}</div>
+                            {% comment %} Campo oculto para el tipo de test {% endcomment %}
+                            {{ test_form.tipo|add_class:"form-select" }}
+                            {% comment %} Mensaje de error {% endcomment %}
+                            {% if test_form.tipo.errors %}
+                            <div class="invalid-feedback d-block">{{ test_form.tipo.errors.0 }}</div>
                             {% endif %}
                         </div>
             
@@ -96,7 +85,7 @@
                         <h2 class="h5 mb-0">
                             <i class="bi bi-list-ol me-2"></i>Test generados
                         </h2>
-                        <span class="badge bg-white text-primary">{{ secuencias|length }} registros</span>
+                        <span class="badge bg-white text-primary">{{ tests|length }} registros</span>
                     </div>
                 </div>
                 <div class="card-body">
@@ -119,20 +108,33 @@
                                     <td class="fw-bold">{{ forloop.counter }}</td>
                                     <td>
                                         <span
-                                            class="badge {% if t.tipo == 'PK' %}bg-info{% else %}bg-warning{% endif %}">
-                                            {{ t.get_tipo_display }}
+                                            class="badge rounded-pill text-bg-primary">
+                                            {% if t.tipo == 'PK' %} Poker {% else %} Chi-cuadrado {% endif %}
                                         </span>
                                     </td>
-                                    <td>{{ t.frecuencias_observadas }}</td>
-
-                                    <td>{{ t.secuencias }}</td>
+                                    <td>
+                                        {% if t.tipo == 'PK' %}
+                                        {% comment %} para el caso de poker tenemos un objeto en vez de una lista de numeros asi que tenemos que armar la lista segun las probabilidades del test de poker {% endcomment %}
+                                        <code class="text-muted mb-0">
+                                        {% for t in t.frecuencias_observadas.values %}
+                                        {{ t }}{% if not forloop.last %}, {% endif %}
+                                        {% endfor %}
+                                        </code>
+                                        {% elif t.tipo == 'CC' %}
+                                        {% comment %} para el caso de chi cuadrado tenemos una lista de numeros asi que podemos mostrarla directamente {% endcomment %}
+                                        <code class="text-muted mb-0">{{ t.frecuencias_observadas }}</code>
+                                        {% endif %}
+                                    </td>
+                                    
+                                    <td>{{ t.secuencia|join:", "|truncatechars:30  }}</td>
+                                    <td>{% if t.aprobado %}Sí{% else %}No{% endif %}</td>
                                     <td>
                                         <div class="btn-group btn-group-sm">
-                                            <a href="{% url 'test:ver_secuencia' t.id t.tipo %}" class="btn btn-primary"
+                                            <a href="{% url 'test:ver' t.id %}" class="btn btn-primary"
                                                 title="Ver detalles">
                                                 <i class="fas fa-eye align-middle"></i>
-                                            </a>
-                                            <form action="{% url 'test:eliminar' t.id t.tipo %}" method="post">
+                                            </a> 
+                                            <form action="{% url 'test:eliminar' t.id %}" method="post">
                                                 {% csrf_token %}
                                                 <button type="submit" class="btn btn-danger btnEliminar rounded-start-0"
                                                     title="Eliminar">
@@ -159,5 +161,22 @@
             </div>
         </div>
     </div>
+    <script>
+        function setTestType(value) {
+            // Actualiza el valor del campo oculto
+            document.getElementById('tipo').value = value;
+        
+            // Remueve la clase 'active' de todos los botones
+            document.getElementById('btn-poker').classList.remove('active');
+            document.getElementById('btn-chi-cuadrado').classList.remove('active');
+        
+            // Agrega la clase 'active' al botón seleccionado
+            if (value === 'Poker') {
+                document.getElementById('btn-poker').classList.add('active');
+            } else if (value === 'Chi-cuadrado') {
+                document.getElementById('btn-chi-cuadrado').classList.add('active');
+            }
+        }  
+    </script>  
 </div>
 {% endblock %}

@@ -87,11 +87,11 @@ def test_poker(significancia, numeros: list[int]):
     chi, crit, pasa, p_valor = chi_cuadrado_test(obs_list, esperadas, significancia)
 
     return {
-        "frecuencia_observada": {k: int(v) for k, v in observadas.items()},
-        "frecuencia_esperada": {k: round(v, 4) for k, v in zip(categorias, esperadas)},
-        "valor_chi2": round(chi, 4),
+        "frecuencias_observadas": {k: int(v) for k, v in observadas.items()},
+        "frecuencias_esperadas": {k: round(v, 4) for k, v in zip(categorias, esperadas)},
+        "estadistico_prueba": round(chi, 4),
         "valor_critico": round(crit, 4),
-        "p_valor": round(p_valor, 4),
-        "aprueba": bool(pasa),
+        "pvalor": round(p_valor, 4),
+        "aprobado": bool(pasa),
         "grupos_analizados": total
     }
