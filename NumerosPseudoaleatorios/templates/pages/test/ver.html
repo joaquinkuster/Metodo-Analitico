@@ -38,22 +38,16 @@
               <p class="text-muted mb-0">{{ test.significancia }}</p>
             </div>
           </div>
-          <div class="col-md-4 mt-4">
+          <div class="col-md-6 mt-4">
             <h5 class="fw-bold">Estadistico de prueba</h5>
             <div class="bg-light p-3 rounded">
               <p class="text-muted mb-0">{{ test.estadistico_prueba }}</p>
             </div>
           </div>
-          <div class="col-md-4 mt-4">
+          <div class="col-md-6 mt-4">
             <h5 class="fw-bold">Valor critico</h5>
             <div class="bg-light p-3 rounded">
               <p class="text-muted mb-0">{{ test.valor_critico }}</p>
-            </div>
-          </div>
-          <div class="col-md-4 mt-4">
-            <h5 class="fw-bold">Cantidad de digitos </h5>
-            <div class="bg-light p-3 rounded">
-              <p class="text-muted mb-0">{{ test.cantidad_digitos }}</p>
             </div>
           </div>
           {% comment %} Armamos una tabla con los valores del test {% endcomment %}
@@ -63,7 +57,6 @@
                     <tr>
                         {% comment %} para este titulo si es PK tiene que mostrar categorias si es cc tiene que mostrar intervalos {% endcomment %}
                         <th class="fw-bold">Categoría</th>
-                        <th>Intervalo</th>
                         <th>FO</th>
                         <th>FE</th>
                         <th>Diferencia</th>
@@ -74,7 +67,7 @@
                 <tbody class="text-center">
                     {% for frecuencia in frecuencias %}
                     <tr>
-                      <td>{{ frecuencia.categoria }}</td>
+                      <td>{{ frecuencia.cat }}</td>
                       <td class="fw-bold">{{ frecuencia.fo }}</td>
                       <td class="fw-bold">{{ frecuencia.fe }}</td>
                       <td class="fw-bold">{{ frecuencia.diferencia|floatformat:5 }}</td>

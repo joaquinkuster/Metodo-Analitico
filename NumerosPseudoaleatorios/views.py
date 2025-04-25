@@ -218,18 +218,23 @@ def ver_test(request, id, tipo):
             "Poker",
             "Quintilla",
         ]
+        observadas = list(test.frecuencias_observadas.values())
+        esperadas = list(test.frecuencias_esperadas.values())
     elif test.tipo == 'CC':
         categorias = [[round(test.intervalos[i], 2), round(test.intervalos[i + 1], 2)] for i in range(len(test.intervalos)-1)]
+        observadas = test.frecuencias_observadas
+        esperadas = test.frecuencias_esperadas
+
     frecuencias = [
     {
-        "fo": float(fo),  # Convertir fo a float
+        "fo": fo,  # Convertir fo a float
         "fe": float(fe),  # Convertir fe a float
         "diferencia": (float(fo) - float(fe)),
         "cuadrado_diferencia": (float(fo) - float(fe)) ** 2,
-        "cuadrado_diferencia_fe": ((float(fo) - float(fe)) ** 2) / float(fe) if float(fe) != 0 else None,
-        "categoria": cat,  # Guardar la categoría como string
+        "cuadrado_diferencia_fe": ((float(fo) - float(fe)) ** 2) / float(fe) if float(fe) != 0 else None,# Guardar la categoría como string
+        "cat": cat
     }
-    for cat, fo, fe in zip(categorias, test.frecuencias_observadas, test.frecuencias_esperadas)
+    for cat, fo, fe in zip(categorias, observadas, esperadas)
     ]
     return render(
         request,
