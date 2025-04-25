@@ -10,8 +10,8 @@ secuencia_patterns = [
 
 test_patterns = [
     path('generar/', views.generar_test, name='generar'),
-    path('ver/<int:id>/', views.ver_test, name='ver'),
-    path('eliminar/<int:id>/', views.eliminar_test, name='eliminar')
+    path('ver/<int:id>/<str:tipo>/', views.ver_test, name='ver'),
+    path('eliminar/<int:id>/<str:tipo>/', views.eliminar_test, name='eliminar')
 ]
 
 urlpatterns = [

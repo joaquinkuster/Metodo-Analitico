@@ -1,7 +1,6 @@
 from math import isclose
 from scipy.stats import chi2
 from collections import Counter
-from .funcionesPoquer import unir_numeros_como_string, separar_en_bloques_de_5
 
 # función para prueba de chi cuadrado
 def chi_cuadrado_test(observadas, esperadas, significancia):
@@ -24,22 +23,14 @@ def test_poker(significancia, numeros: list[int]):
     if not numeros:
         return {"error": "La lista de números está vacía"}
     
-    # QUITAR ESTA VALIDACIÓN o modificarla para aceptar los números que tienes
-    # if not all(0 <= num < 1 for num in numeros):
-    #    return {"error": "Los números deben estar en el intervalo [0,1)"}
-
-    # Convertir números a cadena y normalizar para que estén en el rango adecuado
-    # Primero encontrar el valor máximo para normalizar
-    max_value = max(numeros) if numeros else 1
-    
-    # Convertir números a dígitos (cada número se convierte en sus dígitos)
-    numeros_digitos = ''.join(str(num).zfill(5)[:5] for num in numeros)
+    # Convertir números a string y unirlos
+    numeros_digitos = ''.join(str(num) for num in numeros)
     
     # Asegurar que podemos hacer grupos completos de 5
     num_completos = len(numeros_digitos) // 5 * 5
     numeros_digitos = numeros_digitos[:num_completos]
     grupos_poker = [numeros_digitos[i:i+5] for i in range(0, num_completos, 5)]
-    
+     
     # Categorías de manos
     categorias = ["todos_diferentes", "un_par", "dos_pares", "tercia", "full", "poker", "quintilla"]
 
@@ -63,6 +54,8 @@ def test_poker(significancia, numeros: list[int]):
         # Clasificación
         if conteo == [5]:
             observadas["quintilla"] += 1
+        elif conteo == [4, 1]:
+            observadas["poker"] += 1
         elif conteo == [3, 2]:
             observadas["full"] += 1
         elif conteo == [3, 1, 1]:
@@ -93,5 +86,5 @@ def test_poker(significancia, numeros: list[int]):
         "valor_critico": round(crit, 4),
         "pvalor": round(p_valor, 4),
         "aprobado": bool(pasa),
-        "grupos_analizados": total
+        "grupos_analizados": total,
     }

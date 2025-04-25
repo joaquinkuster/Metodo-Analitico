@@ -38,37 +38,66 @@
               <p class="text-muted mb-0">{{ test.significancia }}</p>
             </div>
           </div>
-          <div class="col-md-6 mt-4">
+          <div class="col-md-4 mt-4">
             <h5 class="fw-bold">Estadistico de prueba</h5>
             <div class="bg-light p-3 rounded">
               <p class="text-muted mb-0">{{ test.estadistico_prueba }}</p>
             </div>
           </div>
-          <div class="col-md-6 mt-4">
+          <div class="col-md-4 mt-4">
             <h5 class="fw-bold">Valor critico</h5>
             <div class="bg-light p-3 rounded">
               <p class="text-muted mb-0">{{ test.valor_critico }}</p>
             </div>
           </div>
-          <div class="col-md-6 mt-4">
-            <h5 class="fw-bold">Frecuencias Observadas</h5>
+          <div class="col-md-4 mt-4">
+            <h5 class="fw-bold">Cantidad de digitos </h5>
             <div class="bg-light p-3 rounded">
-                {% if test.tipo == 'PK' %}
-                {% comment %} para el caso de poker tenemos un objeto en vez de una lista de numeros asi que tenemos que armar la lista segun las probabilidades del test de poker {% endcomment %}
-                <code class="text-muted mb-0">
-                  {% for t in test.frecuencias_observadas.values %}
-                  {{ t }}{% if not forloop.last %}, {% endif %}
-                  {% endfor %}
-                </code>
-                {% elif test.tipo == 'CC' %}
-                {% comment %} para el caso de chi cuadrado tenemos una lista de numeros asi que podemos mostrarla directamente {% endcomment %}
-                <code class="text-muted mb-0">{{ test.frecuencias_observadas }}</code>
-                {% endif %}
+              <p class="text-muted mb-0">{{ test.cantidad_digitos }}</p>
             </div>
           </div>
+          {% comment %} Armamos una tabla con los valores del test {% endcomment %}
+          <div class="table-responsive rounded mt-4">
+            <table class="table table-hover align-middle mb-0 p-3">
+                <thead class="table-light text-center">
+                    <tr>
+                        {% comment %} para este titulo si es PK tiene que mostrar categorias si es cc tiene que mostrar intervalos {% endcomment %}
+                        <th class="fw-bold">Categoría</th>
+                        <th>Intervalo</th>
+                        <th>FO</th>
+                        <th>FE</th>
+                        <th>Diferencia</th>
+                        <th>Diferencia²</th>
+                        <th>Diferencia² / FE</th>
+                    </tr>
+                </thead>
+                <tbody class="text-center">
+                    {% for frecuencia in frecuencias %}
+                    <tr>
+                      <td>{{ frecuencia.categoria }}</td>
+                      <td class="fw-bold">{{ frecuencia.fo }}</td>
+                      <td class="fw-bold">{{ frecuencia.fe }}</td>
+                      <td class="fw-bold">{{ frecuencia.diferencia|floatformat:5 }}</td>
+                      <td class="fw-bold">{{ frecuencia.cuadrado_diferencia|floatformat:5 }}</td>
+                      <td class="fw-bold">{{ frecuencia.cuadrado_diferencia_fe|floatformat:5 }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                      <td colspan="8" class="text-center py-4">
+                          <div class="text-muted">
+                              <i class="bi bi-info-circle fs-4"></i>
+                              <p class="mt-2 mb-0">No hay tests registrados</p>
+                          </div>
+                      </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
           <!-- Información de la Secuencia -->
           <!-- Números Generados -->
-          <div class="mb-4">
+          <div class="mb-4 mt-4">
             <h5 class="fw-bold">Números Generados</h5>
             <div class="bg-light p-3 rounded">
               <code>{{ test.secuencia }}</code>
