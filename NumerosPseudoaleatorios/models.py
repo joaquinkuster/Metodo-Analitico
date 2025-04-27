@@ -32,8 +32,20 @@ def validar_significancia(significancia):
     if not (0 < significancia < 1):
         raise ValidationError("La significancia debe ser un número entre 0 y 1.")
 
+# Validadores para ChiCuadrado
+
+def validar_cantidad_digitos(valor):
+    if valor not in [1, 2, 3]:
+        raise ValidationError("La cantidad de dígitos debe ser 1, 2 o 3.")
+
+def validar_intervalos(intervalos):
+    if len(intervalos) != 10:
+        raise ValidationError("Debe haber exactamente 10 intervalos.")
+    if not all(isinstance(i, float) for i in intervalos):
+        raise ValidationError("Todos los intervalos deben ser de tipo float.")
+
+
 class SecuenciaBase(models.Model):
-    id = models.IntegerField(primary_key=True)
     tipo = models.CharField(
         max_length=2,
         choices=TipoGenerador.choices,
@@ -47,7 +59,6 @@ class SecuenciaBase(models.Model):
         return f"{self.numeros}"
     
 class TesterBase(models.Model):
-    id = models.IntegerField(primary_key=True)
     tipo = models.CharField(
         max_length=2,
         choices=TipoTester.choices,
@@ -57,6 +68,7 @@ class TesterBase(models.Model):
     valor_critico = models.FloatField()
     aprobado = models.BooleanField()
     frecuencias_observadas = models.JSONField(validators=[validar_numeros], default=list)
+    frecuencias_esperadas = models.JSONField(validators=[validar_numeros], default=list)
     secuencia = models.ForeignKey(SecuenciaBase, on_delete=models.CASCADE)
     pvalor = models.FloatField()
     fecha_creacion = models.DateTimeField(auto_now_add=True)
@@ -78,6 +90,33 @@ class TesterBase(models.Model):
         
     def __str__(self):
         return f"{self.estadistico_prueba} <= {self.valor_critico}"
+
+class ChiCuadrado(TesterBase):
+    cantidad_digitos = models.PositiveIntegerField(
+        default=1,
+        validators=[validar_cantidad_digitos]
+    )
+    intervalos = models.JSONField(
+        default=list,   
+        validators=[validar_intervalos]
+    )
+
+    def validar_campos(self):
+        errores = {}
+        
+        if self.cantidad_digitos not in [1, 2, 3]:
+            errores["cantidad_digitos"] = "La cantidad de dígitos debe ser 1, 2 o 3."
+        
+        if not (len(self.intervalos) == 10 and all(isinstance(i, float) for i in self.intervalos)):
+            errores["intervalos"] = "Debe haber exactamente 10 intervalos de tipo float."
+        
+        if errores:
+            raise ValidationError(errores)
+
+    def save(self, *args, **kwargs):
+        self.tipo = TipoTester.CHI_CUADRADO
+        self.validar_campos()
+        super().save(*args, **kwargs)
 
 class VonNeumann(SecuenciaBase):
     def validar_campos(self):
