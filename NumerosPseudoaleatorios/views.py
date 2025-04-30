@@ -94,11 +94,55 @@ def ver_secuencia(request, id, tipo):
         messages.error(request, "No se encontró la secuencia para visualizar.")
         return redirect("secuencia:generar")
 
+    # Calcular el número total de dígitos en la secuencia
+    total_digitos = 0
+    for numero in secuencia.numeros:
+        # Contamos los dígitos de cada número (abs para manejar negativos)
+        total_digitos += len(str(abs(numero)))
+        # Si el número es negativo, contamos un dígito extra para el signo
+        if numero < 0:
+            total_digitos += 1
+
+    # Procesar el parámetro de agrupación
+    numeros_agrupados = None
+    agrupar = request.GET.get('agrupar')
+    
+    if agrupar:
+        try:
+            agrupar = int(agrupar)
+            if agrupar > 0:
+                # Extraer todos los dígitos de los números generados
+                todos_digitos = []
+                for numero in secuencia.numeros:
+                    # Convertir el número a cadena y obtener sus dígitos
+                    digitos = [int(d) for d in str(abs(numero))]
+                    # Si el número es negativo, añadimos un signo - como un elemento separado
+                    if numero < 0:
+                        todos_digitos.append('-')
+                    todos_digitos.extend(digitos)
+                
+                # Agrupar los dígitos según el valor de 'agrupar'
+                grupos = []
+                for i in range(0, len(todos_digitos), agrupar):
+                    grupo = todos_digitos[i:i+agrupar]
+                    # Manejar el signo negativo si está presente en un grupo
+                    if '-' in grupo:
+                        grupo_str = ','.join([str(d) if d != '-' else '-' for d in grupo])
+                    else:
+                        grupo_str = ','.join(map(str, grupo))
+                    grupos.append(f"[{grupo_str}]")
+                
+                numeros_agrupados = ' '.join(grupos)
+        except (ValueError, TypeError):
+            messages.error(request, "El valor de agrupación debe ser un entero positivo.")
+
     return render(
         request,
         "pages/secuencia/ver.html",
         {
             "secuencia": secuencia,
+            "numeros_agrupados": numeros_agrupados,
+            "total_digitos": total_digitos,  # Pasamos el total de dígitos a la plantilla
         },
     )
 
