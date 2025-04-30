@@ -61,11 +61,41 @@
                 </div>
                 {% endif %}
 
+                <!-- Filtro de Agrupación -->
+                <div class="mb-4">
+                    <h5 class="fw-bold">Agrupar dígitos</h5>
+                    <form method="get" action="" id="filtroForm" class="row g-2 align-items-center">
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <input type="number" name="agrupar" id="agrupar" min="1" max="{{ total_digitos }}"
+                                       class="form-control" placeholder="Dígitos por grupo"
+                                       value="{{ request.GET.agrupar|default:'' }}">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-filter me-1"></i>Aplicar
+                                </button>
+                            </div>
+                            <div class="form-text text-muted">
+                                Ingresa un número entero positivo entre 1 y {{ total_digitos }} (máximo)
+                            </div>
+                        </div>
+                        {% if request.GET.agrupar %}
+                        <div class="col-md-6">
+                            <a href="{% url 'secuencia:ver' secuencia.id secuencia.tipo %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle me-1"></i>Quitar filtro
+                            </a>
+                        </div>
+                        {% endif %}
+                    </form>
+                </div>
                 <!-- Números Generados -->
                 <div class="mb-4">
                     <h5 class="fw-bold">Números Generados</h5>
                     <div class="bg-light p-3 rounded">
+                        {% if numeros_agrupados %}
+                        <code>{{ numeros_agrupados }}</code>
+                        {% else %}
                         <code>{{ secuencia.numeros|join:", " }}</code>
+                        {% endif %}
                     </div>
                 </div>
 
