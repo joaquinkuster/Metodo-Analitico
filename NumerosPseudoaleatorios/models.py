@@ -33,7 +33,6 @@ def validar_significancia(significancia):
         raise ValidationError("La significancia debe ser un número entre 0 y 1.")
 
 # Validadores para ChiCuadrado
-
 def validar_cantidad_digitos(valor):
     if valor not in [1, 2, 3]:
         raise ValidationError("La cantidad de dígitos debe ser 1, 2 o 3.")
@@ -73,7 +72,7 @@ class TesterBase(models.Model):
     pvalor = models.FloatField()
     fecha_creacion = models.DateTimeField(auto_now_add=True)
 
-    def validar_datos(self):
+    def validar_campos(self):
         errores = {}
 
         if self.estadistico_prueba < 0:
@@ -92,10 +91,7 @@ class TesterBase(models.Model):
         return f"{self.estadistico_prueba} <= {self.valor_critico}"
 
 class ChiCuadrado(TesterBase):
-    cantidad_digitos = models.PositiveIntegerField(
-        default=1,
-        validators=[validar_cantidad_digitos]
-    )
+    cantidad_digitos = models.PositiveIntegerField(default=1, validators=[validar_cantidad_digitos])
     intervalos = models.JSONField(
         default=list,   
         validators=[validar_intervalos]

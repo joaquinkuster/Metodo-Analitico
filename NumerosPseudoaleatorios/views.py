@@ -8,6 +8,8 @@ from django.views.decorators.http import require_POST
 from .testers.poquer import test_poker
 from .testers.chiCuadrado import test_chi_cuadrado
 from django.http import JsonResponse, HttpResponseNotAllowed
+from .distribuciones.distribuciones import datos_binomial, datos_exponencial
+import json
 
 # Create your views here.
 
@@ -309,3 +311,27 @@ def testear_secuencia(request, id, tipo):
             "tests": TesterBase.objects.all().order_by("-fecha_creacion"),
         },
     )
+
+
+
+def generar_distribucion(request):
+    datos_bin = None
+    datos_exp = None
+
+    if request.method == 'POST':
+        tipo = request.POST.get("tipo")
+        cantidad = int(request.POST.get("cantidad"))
+
+        if tipo == "binomial":
+            ensayos = int(request.POST.get("ensayos"))
+            probabilidad = float(request.POST.get("probabilidad"))
+            datos_bin = datos_binomial(ensayos, probabilidad, cantidad)
+
+        elif tipo == "exponencial":
+            tasa = float(request.POST.get("lambda"))
+            datos_exp = datos_exponencial(tasa, cantidad)
+
+    return render(request, 'pages/distribucion/generar.html', {
+        'datos_bin': json.dumps(datos_bin),
+        'datos_exp': json.dumps(datos_exp),
+    })

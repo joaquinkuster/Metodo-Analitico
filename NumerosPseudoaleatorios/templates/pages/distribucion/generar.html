@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <form method="post">
+        {% csrf_token %}
+        <select name="tipo">
+            <option value="binomial">Binomial</option>
+            <option value="exponencial">Exponencial</option>
+        </select>
+
+        <input type="number" name="cantidad" placeholder="Cantidad de valores">
+        <input type="number" step="1" name="ensayos" placeholder="Ensayos (solo binomial)">
+        <input type="number" step="0.01" name="probabilidad" placeholder="Probabilidad (solo binomial)">
+        <input type="number" step="0.01" name="lambda" placeholder="Lambda (solo exponencial)">
+
+        <button type="submit">Generar</button>
+    </form>
+
+    {% if datos_bin %}
+    <div id="grafico_binomial"></div>
+    <script>
+        const datos_bin = {{ datos_bin|safe }};
+        Plotly.newPlot("grafico_binomial", [{
+            x: datos_bin,
+            type: "histogram",
+            marker: {color: "blue"}
+        }], {
+            title: "Distribución Binomial",
+            xaxis: {title: "Éxitos"},
+            yaxis: {title: "Frecuencia"}
+        });
+    </script>
+    {% endif %}
+
+    {% if datos_exp %}
+    <div id="grafico_exponencial"></div>
+    <script>
+        const datos_exp = {{ datos_exp|safe }};
+        Plotly.newPlot("grafico_exponencial", [{
+            x: datos_exp,
+            type: "histogram",
+            marker: {color: "green"}
+        }], {
+            title: "Distribución Exponencial",
+            xaxis: {title: "Valor"},
+            yaxis: {title: "Frecuencia"}
+        });
+    </script>
+    {% endif %}
+</body>
+</html>
