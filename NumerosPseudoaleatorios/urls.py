@@ -14,13 +14,15 @@ test_patterns = [
     path('eliminar/<int:id>/<str:tipo>/', views.eliminar_test, name='eliminar')
 ]
 
-test_patterns = [
+distribucion_patterns = [
     path('generar/', views.generar_distribucion, name='generar'),
+    path('ver/<int:id>/', views.ver_distribucion, name='ver'),
+    path('eliminar/<int:id>/<str:tipo>/', views.eliminar_test, name='eliminar')
 ]
 
 urlpatterns = [
     path('', views.index, name='index'),
     path('secuencia/', include((secuencia_patterns, 'NumerosPseudoaleatorios'), namespace='secuencia')),
     path('test/', include((test_patterns, 'NumerosPseudoaleatorios'), namespace="test")),
-    path('distribucion/', include((test_patterns, 'NumerosPseudoaleatorios'), namespace="distribucion")),
+    path('distribucion/', include((distribucion_patterns, 'NumerosPseudoaleatorios'), namespace="distribucion")),
 ]
