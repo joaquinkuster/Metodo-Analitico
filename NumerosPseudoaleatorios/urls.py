@@ -14,8 +14,14 @@ test_patterns = [
     path('eliminar/<int:id>/<str:tipo>/', views.eliminar_test, name='eliminar')
 ]
 
+distribucion_patterns = [
+    path('binomial/', views.binomial, name='binomial'),
+]
+
 urlpatterns = [
     path('', views.index, name='index'),
     path('secuencia/', include((secuencia_patterns, 'NumerosPseudoaleatorios'), namespace='secuencia')),
     path('test/', include((test_patterns, 'NumerosPseudoaleatorios'), namespace="test")),
+    path('distribucion/', include((distribucion_patterns, 'NumerosPseudoaleatorios'), namespace='distribucion')),
+    
 ]

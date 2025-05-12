@@ -2,15 +2,14 @@ from django import forms
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.core.exceptions import ValidationError
+
+from NumerosPseudoaleatorios.distribuciones.binomial import verificar_distribucion_binomial
 from .models import ChiCuadrado, SecuenciaBase, TipoGenerador, VonNeumann, CongruencialMultiplicativo, TesterBase
 from .forms import VonNeumannForm, CongruencialMultiplicativoForm, TestNumerosForm
 from django.views.decorators.http import require_POST
 from .testers.poquer import test_poker
 from .testers.chiCuadrado import test_chi_cuadrado
 from django.http import JsonResponse, HttpResponseNotAllowed
-
-# Create your views here.
-
 
 def index(request):
     return render(request, "index.html")
@@ -265,3 +264,15 @@ def testear_secuencia(request, id, tipo):
             "tests": TesterBase.objects.all().order_by("-fecha_creacion"),
         },
     )
+
+def binomial(request):
+    if request.method == "POST":
+        # n = int(request.POST.get("n"))
+        # p = float(request.POST.get("p"))
+        # datos = list(map(int, request.POST.get("datos").split(",")))
+        # # Llamar a la función de verificación
+        resultado, mensaje = verificar_distribucion_binomial()
+        print(resultado, mensaje)
+        return JsonResponse({"resultado": resultado, "mensaje": mensaje})
+    else:
+        return render(request, "pages/distribucion/generar.html")
