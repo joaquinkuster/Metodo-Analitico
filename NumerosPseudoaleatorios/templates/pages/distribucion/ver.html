@@ -1,0 +1,186 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+{% block title %}Detalle de Distribución{% endblock %}
+
+{% block body %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card border-0 shadow-lg my-5">
+            <div class="card-header bg-primary text-white">
+                <h2 class="h5 mb-0">
+                    <i class="bi bi-eye me-2"></i>Detalle de Distribución
+                    <span class="badge bg-light text-dark float-end">
+                        {{ distribucion.get_tipo_display }}
+                    </span>
+                </h2>
+            </div>
+            <div class="card-body">
+                <!-- Parámetros específicos -->
+                <div class="row mb-4">
+                    {% if distribucion.tipo == 'BI' %}
+                    <div class="col-md-6">
+                        <h5 class="fw-bold">Probabilidad de éxito <code>(p)</code></h5>
+                        <div class="bg-light p-3 rounded">
+                            <p class="text-muted mb-0">{{ distribucion.binomial.p }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h5 class="fw-bold">Número de ensayos <code>(n)</code></h5>
+                        <div class="bg-light p-3 rounded">
+                            <p class="text-muted mb-0">{{ distribucion.binomial.n }}</p>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="col-md-6">
+                        <h5 class="fw-bold">Tasa <code>(λ)</code></h5>
+                        <div class="bg-light p-3 rounded">
+                            <p class="text-muted mb-0">{{ distribucion.exponencial.tasa }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Estadísticos -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h5 class="fw-bold">Esperanza <code>E(x)</code></h5>
+                        <div class="bg-light p-3 rounded">
+                            <p class="text-muted mb-0">{{ distribucion.esperanza|floatformat:2 }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h5 class="fw-bold">Varianza <code>V(x)</code></h5>
+                        <div class="bg-light p-3 rounded">
+                            <p class="text-muted mb-0">{{ distribucion.varianza|floatformat:2 }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Valores de x -->
+                <div class="mb-4">
+                    <h5 class="fw-bold">Marcas de clase</h5>
+                    <div class="bg-light p-3 rounded">
+                        <code>
+                        {% if distribucion.tipo == 'EXP' %}
+                            {% for v in distribucion.valores_x %}
+                                {{ v|floatformat:1 }}{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            {{ distribucion.valores_x|join:", " }}
+                        {% endif %}
+                        </code>
+                    </div>
+                </div>
+
+                <!-- Valores de probabilidad -->
+                <div class="mb-4">
+                    <h5 class="fw-bold">Probabilidades puntuales <code>f(x)</code></h5>
+                    <div class="bg-light p-3 rounded">
+                        <code>
+                        {% for v in distribucion.valores_probabilidad %}
+                            {{ v|floatformat:4 }}{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                        </code>
+                    </div>
+                </div>
+
+                <!-- Valores acumulados -->
+                <div class="mb-4">
+                    <h5 class="fw-bold">Probabilidades acumuladas <code>F(x)</code></h5>
+                    <div class="bg-light p-3 rounded">
+                        <code>
+                        {% for v in distribucion.valores_acumulados %}
+                            {{ v|floatformat:4 }}{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                        </code>
+                    </div>
+                </div>
+
+                <!-- Fecha de creación -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h5 class="fw-bold">Fecha de Creación</h5>
+                        <div class="bg-light p-3 rounded">
+                            <p class="text-muted mb-0">{{ distribucion.fecha_creacion|date:"d/m/Y H:i" }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gráfico de densidad / probabilidad (PDF) -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="fw-bold">Función de densidad / probabilidad <code>f(x)</code></h5>
+                        {% if distribucion.tipo == 'BI' %}
+                        <p class="mb-2"><em>X</em> &sim; Bin(<strong>{{ distribucion.binomial.n }}</strong>, <strong>
+                                {{ distribucion.binomial.p }}</strong>)</p>
+                        {% else %}
+                        <p class="mb-2"><em>X</em> &sim; Exp(&lambda; = <strong>
+                                {{ distribucion.exponencial.tasa }}</strong>)</p>
+                        {% endif %}
+                        <div id="grafico-pdf"></div>
+                    </div>
+                </div>
+
+                <!-- Gráfico de distribución acumulada (CDF) -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="fw-bold">Función de distribución acumulada <code>F(x)</code></h5>
+                        {% if distribucion.tipo == 'BI' %}
+                        <p class="mb-2"><em>X</em> &sim; Bin(<strong>{{ distribucion.binomial.n }}</strong>, <strong>
+                                {{ distribucion.binomial.p }}</strong>)</p>
+                        {% else %}
+                        <p class="mb-2"><em>X</em> &sim; Exp(&lambda; = <strong>
+                                {{ distribucion.exponencial.tasa }}</strong>)</p>
+                        {% endif %}
+                        <div id="grafico-cdf"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.plot.ly/plotly-2.30.0.min.js"></script>
+<script>
+    const xs = {{ distribucion.valores_x| safe }};
+    const pdf = {{ distribucion.valores_probabilidad| safe }};
+    const cdf = {{ distribucion.valores_acumulados| safe }};
+
+    // Configuración condicional para el gráfico de f(x)
+    {% if distribucion.tipo == "BI" %}
+    const tipoPdf = 'bar';
+    const modoPdf = '';
+    const tituloY = 'P(X=x)';
+    {% else %}
+    const tipoPdf = 'scatter';
+    const modoPdf = 'lines';
+    const tituloY = 'f(x)';
+    {% endif %}
+
+    Plotly.newPlot('grafico-pdf', [{
+        x: xs,
+        y: pdf,
+        type: tipoPdf,
+        mode: modoPdf
+    }], {
+        xaxis: { title: 'x' },
+        yaxis: { title: tituloY }
+    });
+
+    // Gráfico de F(x)
+    Plotly.newPlot('grafico-cdf', [{
+        x: xs,
+        y: cdf,
+        type: 'scatter',
+        mode: 'lines'
+    }], {
+        xaxis: { title: 'x' },
+        yaxis: { title: 'F(x)' }
+    });
+
+    window.addEventListener('resize', function () {
+        Plotly.Plots.resize('grafico-pdf');
+        Plotly.Plots.resize('grafico-cdf');
+    });
+</script>
+{% endblock %}

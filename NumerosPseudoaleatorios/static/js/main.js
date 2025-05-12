@@ -27,27 +27,27 @@ $(document).ready(function () {
     }
 
     // Toggle entre formularios
-    const btnVonNeumann = $('#btn-vonneumann');
-    const btnCongruencial = $('#btn-congruencial');
-    const formVonNeumann = $('#form-vonneumann');
-    const formCongruencial = $('#form-congruencial');
+    const btnToggle1 = $('#btnToggle1');
+    const btnToggle2 = $('#btnToggle2');
+    const formToggle1 = $('#formToggle1');
+    const formToggle2 = $('#formToggle2');
 
-    if (btnVonNeumann.length && btnCongruencial.length) {
-        function toggleForms(vonNeumann) {
-            if (vonNeumann) {
-                btnVonNeumann.addClass('active');
-                btnCongruencial.removeClass('active');
-                formVonNeumann.show();
-                formCongruencial.hide();
+    if (btnToggle1.length && btnToggle2.length) {
+        function toggleForms(isFormToogle1) {
+            if (isFormToogle1) {
+                btnToggle1.addClass('active');
+                btnToggle2.removeClass('active');
+                formToggle1.show();
+                formToggle2.hide();
             } else {
-                btnVonNeumann.removeClass('active');
-                btnCongruencial.addClass('active');
-                formVonNeumann.hide();
-                formCongruencial.show();
+                btnToggle1.removeClass('active');
+                btnToggle2.addClass('active');
+                formToggle1.hide();
+                formToggle2.show();
             }
         }
 
-        btnVonNeumann.on('click', function () { toggleForms(true); });
-        btnCongruencial.on('click', function () { toggleForms(false); });
+        btnToggle1.on('click', function () { toggleForms(true); });
+        btnToggle2.on('click', function () { toggleForms(false); });
     }
 })

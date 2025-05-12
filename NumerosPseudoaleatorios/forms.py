@@ -1,6 +1,14 @@
 from django import forms
-from .models import TesterBase, VonNeumann, CongruencialMultiplicativo, VALORES_P_VALIDOS, SecuenciaBase, TipoTester
-
+from .models import (
+    TesterBase,
+    VonNeumann,
+    CongruencialMultiplicativo,
+    VALORES_P_VALIDOS,
+    SecuenciaBase,
+    ChiCuadrado,
+    Binomial,
+    Exponencial,
+)
 
 class VonNeumannForm(forms.ModelForm):
     class Meta:
@@ -70,50 +78,116 @@ class CongruencialMultiplicativoForm(forms.ModelForm):
         # Usar los valores válidos del modelo para el campo p
         self.fields["p"].widget.choices = [(x, x) for x in VALORES_P_VALIDOS]
 
-class TestNumerosForm(forms.ModelForm):
-    cantidad_digitos = forms.IntegerField(
-        required=False,
-        min_value=1,
-        max_value=3,
-        widget=forms.NumberInput(attrs={"placeholder": "Cantidad de dígitos", "id": "cantidad-digitos"}),
-        label="Cantidad de dígitos",
-    )
+
+class ChiCuadradoForm(forms.ModelForm):
     class Meta:
-        model = TesterBase
-        fields = ["tipo", "secuencia", "significancia"]
+        model = ChiCuadrado
+        fields = ["secuencia", "significancia", "cantidad_digitos"]
         widgets = {
-            "tipo": forms.Select(
-                choices=[(x, x) for x in TipoTester],
-                attrs={"placeholder": "Tipo de test", "id": "tipo-test"},
-            ),
             "secuencia": forms.Select(
-                choices=[(x.id, str(x)) for x in SecuenciaBase.objects.all()],
-                attrs={"placeholder": "Secuencia a testear"},
+                attrs={"placeholder": "Seleccioná secuencia", "required": True}
             ),
             "significancia": forms.NumberInput(
                 attrs={
                     "min": 0.01,
                     "max": 0.1,
+                    "step": 0.01,
                     "value": 0.05,
+                    "required": True,
+                    "placeholder": "Nivel de significancia"
+                }
+            ),
+            "cantidad_digitos": forms.NumberInput(
+                attrs={
+                    "min": 1,
+                    "max": 3,
+                    "step": 1,
+                    "required": True,
+                    "placeholder": "Cantidad de dígitos a agrupar"
+                }
+            ),
+        }
+        labels = {
+            "secuencia": "Secuencia",
+            "significancia": "Nivel de significancia (α)",
+            "cantidad_digitos": "Cantidad de dígitos a agrupar (n)",
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["secuencia"].queryset = SecuenciaBase.objects.all()
+
+
+class PokerForm(forms.ModelForm):
+    class Meta:
+        model = TesterBase  # Asigna diseño de formulario a TesterBase para Poker
+        fields = ["secuencia", "significancia"]
+        widgets = {
+            "secuencia": forms.Select(
+                attrs={"placeholder": "Seleccioná secuencia", "required": True}
+            ),
+            "significancia": forms.NumberInput(
+                attrs={
+                    "min": 0.01,
+                    "max": 0.1,
+                    "step": 0.01,
+                    "value": 0.05,
+                    "required": True,
+                    "placeholder": "Nivel de significancia"
+                }
+            ),
+        }
+        labels = {
+            "secuencia": "Secuencia",
+            "significancia": "Nivel de significancia (α)",
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["secuencia"].queryset = SecuenciaBase.objects.all()
+
+class BinomialForm(forms.ModelForm):
+    class Meta:
+        model = Binomial
+        fields = ["p", "n"]
+        widgets = {
+            "p": forms.NumberInput(
+                attrs={
+                    "min": 0,
+                    "max": 1.0,
+                    "step": 0.01,
+                    "placeholder": "Probabilidad de éxito",
+                    "required": True,
+                }
+            ),
+            "n": forms.NumberInput(
+                attrs={
+                    "min": 1,
+                    "max": 1000,
+                    "placeholder": "Cantidad de ensayos",
                     "required": True,
                 }
             ),
         }
         labels = {
-            "tipo": "Tipo de test",
-            "secuencia": "Secuencia a testear",
-            "significancia": "Nivel de significancia",
-            "cantidad_digitos": "Cantidad de dígitos",
+            "p": "Probabilidad de éxito (p)",
+            "n": "Cantidad de ensayos (n)",
         }
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    def clean(self):
-        cleaned_data = super().clean()
-        tipo = cleaned_data.get("tipo")
-        cantidad_digitos = cleaned_data.get("cantidad_digitos")
-
-        if tipo == TipoTester.CHI_CUADRADO:
-            if not cantidad_digitos:
-                raise forms.ValidationError("Debe especificar la cantidad de dígitos para el test Chi-Cuadrado.")
-        return cleaned_data
+        
+class ExponencialForm(forms.ModelForm):
+    class Meta:
+        model = Exponencial
+        fields = ["tasa"]
+        widgets = {
+            "tasa": forms.NumberInput(
+                attrs={
+                    "min": 0.01,
+                    "step": 0.01,
+                    "placeholder": "Tasa",
+                    "required": True,
+                }
+            ),
+        }
+        labels = {
+            "tasa": "Tasa (λ)",
+        }

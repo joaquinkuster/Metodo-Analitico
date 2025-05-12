@@ -1,13 +1,27 @@
-from django import forms
+from django.http import HttpResponseNotAllowed
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.core.exceptions import ValidationError
-from .models import ChiCuadrado, SecuenciaBase, TipoGenerador, VonNeumann, CongruencialMultiplicativo, TesterBase
-from .forms import VonNeumannForm, CongruencialMultiplicativoForm, TestNumerosForm
+from .models import (
+    ChiCuadrado,
+    TipoGenerador,
+    VonNeumann,
+    CongruencialMultiplicativo,
+    TesterBase,
+    TipoDistribucion,
+    DistribucionBase
+)
+from .forms import (
+    VonNeumannForm,
+    CongruencialMultiplicativoForm,
+    ChiCuadradoForm,
+    PokerForm,
+    BinomialForm,
+    ExponencialForm,
+)
 from django.views.decorators.http import require_POST
 from .testers.poquer import test_poker
 from .testers.chiCuadrado import test_chi_cuadrado
-from django.http import JsonResponse, HttpResponseNotAllowed
 
 # Create your views here.
 
@@ -15,7 +29,8 @@ from django.http import JsonResponse, HttpResponseNotAllowed
 def index(request):
     return render(request, "index.html")
 
-# Funciones para gestionar las secuencias 
+
+# Funciones para gestionar las secuencias
 
 
 def generar_secuencia(request):
@@ -33,7 +48,7 @@ def generar_secuencia(request):
         elif tipo == TipoGenerador.CONGRUENCIAL_MULTIPLICATIVO:
             congruencial_form = CongruencialMultiplicativoForm(request.POST)
             form = congruencial_form
-            
+
         if form.is_valid():
             try:
                 # Guardar la secuencia (las validaciones están en el modelo)
@@ -105,8 +120,8 @@ def ver_secuencia(request, id, tipo):
 
     # Procesar el parámetro de agrupación
     numeros_agrupados = None
-    agrupar = request.GET.get('agrupar')
-    
+    agrupar = request.GET.get("agrupar")
+
     if agrupar:
         try:
             agrupar = int(agrupar)
@@ -118,23 +133,27 @@ def ver_secuencia(request, id, tipo):
                     digitos = [int(d) for d in str(abs(numero))]
                     # Si el número es negativo, añadimos un signo - como un elemento separado
                     if numero < 0:
-                        todos_digitos.append('-')
+                        todos_digitos.append("-")
                     todos_digitos.extend(digitos)
-                
+
                 # Agrupar los dígitos según el valor de 'agrupar'
                 grupos = []
                 for i in range(0, len(todos_digitos), agrupar):
-                    grupo = todos_digitos[i:i+agrupar]
+                    grupo = todos_digitos[i : i + agrupar]
                     # Manejar el signo negativo si está presente en un grupo
-                    if '-' in grupo:
-                        grupo_str = ','.join([str(d) if d != '-' else '-' for d in grupo])
+                    if "-" in grupo:
+                        grupo_str = ",".join(
+                            [str(d) if d != "-" else "-" for d in grupo]
+                        )
                     else:
-                        grupo_str = ','.join(map(str, grupo))
+                        grupo_str = ",".join(map(str, grupo))
                     grupos.append(f"[{grupo_str}]")
-                
-                numeros_agrupados = ' '.join(grupos)
+
+                numeros_agrupados = " ".join(grupos)
         except (ValueError, TypeError):
-            messages.error(request, "El valor de agrupación debe ser un entero positivo.")
+            messages.error(
+                request, "El valor de agrupación debe ser un entero positivo."
+            )
 
     return render(
         request,
@@ -149,21 +168,20 @@ def ver_secuencia(request, id, tipo):
 
 # Funciones para gestionar los tests
 
+
 def generar_test(request):
     # Inicializar el formulario
-    test_form = TestNumerosForm(initial={
-        "tipo": "PK"
-    })
+    test_form = PokerForm(initial={"tipo": "PK"})
 
     form = None
     tests = []
 
     # Procesar POST
     if request.method == "POST":
-        form = TestNumerosForm(request.POST)
+        form = PokerForm(request.POST)
         if form.is_valid():
             try:
-                
+
                 # realizamos el test pasando a la funcion de test de poker la secuencia
                 # y la significancia
                 # Si no es instancia, lo buscamos manualmente
@@ -185,7 +203,9 @@ def generar_test(request):
                     )
                 elif tipo == "CC":
                     cantidad_digitos = form.cleaned_data["cantidad_digitos"]
-                    resultados = test_chi_cuadrado(significancia, secuencia.numeros, cantidad_digitos)
+                    resultados = test_chi_cuadrado(
+                        significancia, secuencia.numeros, cantidad_digitos
+                    )
                     test = ChiCuadrado(
                         tipo=tipo,
                         significancia=significancia,
@@ -201,7 +221,7 @@ def generar_test(request):
                     )
                 else:
                     messages.error(request, "Tipo de prueba no válido.")
-                    return HttpResponseNotAllowed(['POST'])
+                    return HttpResponseNotAllowed(["POST"])
 
                 test.validar_datos()
                 print(test.save())
@@ -212,7 +232,7 @@ def generar_test(request):
                 for field, errs in e.message_dict.items():
                     for err in errs:
                         form.add_error(field, err)
-                
+
     # Obtener todos los tests usando GeneradorBase
     tests = list(TesterBase.objects.all())
     tests.sort(key=lambda x: x.fecha_creacion, reverse=True)
@@ -222,27 +242,28 @@ def generar_test(request):
         "pages/test/generar.html",
         {
             "test_form": test_form,
-            "tests": tests,	
+            "tests": tests,
         },
     )
+
 
 def eliminar_test(request, id):
     test = None
 
     test = TesterBase.objects.get(id=id)
-    
+
     if test is None:
         messages.error(request, "No se encontró el test a eliminar.")
         return redirect("test:generar")
-    
+
     test.delete()
-    
+
     messages.success(request, "Test eliminado exitosamente.")
     return redirect("test:generar")
 
+
 def ver_test(request, id, tipo):
-    
-    
+
     if tipo == "PK":
         test = TesterBase.objects.get(id=id)
     elif tipo == "CC":
@@ -250,9 +271,9 @@ def ver_test(request, id, tipo):
     else:
         if test is None:
             messages.error(request, "No se encontró el test para visualizar.")
-        return redirect("test:generar") 
-    
-    if test.tipo == 'PK':
+        return redirect("test:generar")
+
+    if test.tipo == "PK":
         categorias = [
             "Todos diferentes",
             "Un par",
@@ -264,26 +285,33 @@ def ver_test(request, id, tipo):
         ]
         observadas = list(test.frecuencias_observadas.values())
         esperadas = list(test.frecuencias_esperadas.values())
-    elif test.tipo == 'CC':
-        categorias = [[round(test.intervalos[i], 2), round(test.intervalos[i + 1], 2)] for i in range(len(test.intervalos)-1)]
+    elif test.tipo == "CC":
+        categorias = [
+            [round(test.intervalos[i], 2), round(test.intervalos[i + 1], 2)]
+            for i in range(len(test.intervalos) - 1)
+        ]
         observadas = test.frecuencias_observadas
         esperadas = test.frecuencias_esperadas
 
     frecuencias = [
-    {
-        "fo": fo,  # Convertir fo a float
-        "fe": float(fe),  # Convertir fe a float
-        "diferencia": (float(fo) - float(fe)),
-        "cuadrado_diferencia": (float(fo) - float(fe)) ** 2,
-        "cuadrado_diferencia_fe": ((float(fo) - float(fe)) ** 2) / float(fe) if float(fe) != 0 else None,# Guardar la categoría como string
-        "cat": cat
-    }
-    for cat, fo, fe in zip(categorias, observadas, esperadas)
+        {
+            "fo": fo,  # Convertir fo a float
+            "fe": float(fe),  # Convertir fe a float
+            "diferencia": (float(fo) - float(fe)),
+            "cuadrado_diferencia": (float(fo) - float(fe)) ** 2,
+            "cuadrado_diferencia_fe": (
+                ((float(fo) - float(fe)) ** 2) / float(fe) if float(fe) != 0 else None
+            ),  # Guardar la categoría como string
+            "cat": cat,
+        }
+        for cat, fo, fe in zip(categorias, observadas, esperadas)
     ]
     return render(
         request,
-        "pages/test/ver.html", {"test": test, "frecuencias": frecuencias, "categorias": categorias}
+        "pages/test/ver.html",
+        {"test": test, "frecuencias": frecuencias, "categorias": categorias},
     )
+
 
 def testear_secuencia(request, id, tipo):
     # Obtener la secuencia según el tipo
@@ -296,10 +324,7 @@ def testear_secuencia(request, id, tipo):
         return redirect("secuencia:generar")
 
     # Crear el formulario con la secuencia preseleccionada
-    test_form = TestNumerosForm(initial={
-        "tipo": "PK", 
-        "secuencia": secuencia.id
-    })
+    test_form = PokerForm(initial={"tipo": "PK", "secuencia": secuencia.id})
 
     return render(
         request,
@@ -309,3 +334,58 @@ def testear_secuencia(request, id, tipo):
             "tests": TesterBase.objects.all().order_by("-fecha_creacion"),
         },
     )
+
+def generar_distribucion(request):
+    # Inicializar ambos formularios
+    binomial_form = BinomialForm()
+    exponencial_form = ExponencialForm()
+    tipo = request.POST.get("tipo_distribucion") or None
+    form = None
+
+    # Procesar POST
+    if request.method == "POST":
+        if tipo == TipoDistribucion.BINOMIAL:
+            binomial_form = BinomialForm(request.POST)
+            form = binomial_form
+        elif tipo == TipoDistribucion.EXPONENCIAL:
+            exponencial_form = ExponencialForm(request.POST)
+            form = exponencial_form
+
+        if form.is_valid():
+            try:
+                # Guardar la distribución (las validaciones están en el modelo)
+                distribucion = form.save(commit=False)
+                distribucion.save()
+                messages.success(request, "Distribución generada exitosamente!")
+            except ValidationError as e:
+                # para cada campo y cada error, lo añadimos al form
+                for field, errs in e.message_dict.items():
+                    for err in errs:
+                        form.add_error(field, err)
+
+    # Obtener todas las distribuciones usando DistribucionBase
+    distribuciones = list(DistribucionBase.objects.all())
+    
+    return render(
+        request,
+        "pages/distribucion/generar.html",
+        {
+            "binomial_form": binomial_form,
+            "exponencial_form": exponencial_form,
+            "tipo_distribucion": tipo,
+            "distribuciones": distribuciones,
+        },
+    )
+
+def ver_distribucion(request, id):
+    # Obtenemos la distribución o devolvemos 404
+    distribucion = DistribucionBase.objects.get(id=id)
+
+    if distribucion is None:
+        messages.error(request, "No se encontró la distribución para visualizar.")
+        return redirect("distribucion:generar")
+
+    # Renderizamos la plantilla de detalle
+    return render(request, "pages/distribucion/ver.html", {
+        "distribucion": distribucion,
+    })
