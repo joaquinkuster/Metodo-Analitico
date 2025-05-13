@@ -37,6 +37,13 @@
                                 <i class="bi bi-clipboard-check me-2"></i> Testear aleatoriedad
                             </a>
                         </li>
+                        <hr class="dropdown-divider">
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center {% if request.path == '/distribucion/generar' %}active bg-primary{% endif %}"
+                                href="{% url 'distribucion:generar' %}">
+                                <i class="bi bi-bar-chart-line me-2"></i> Ver distribuciones
+                            </a>
+                        </li>
                     </ul>
                 </li>
             </ul>

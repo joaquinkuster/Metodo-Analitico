@@ -142,10 +142,6 @@ class PokerForm(forms.ModelForm):
             "significancia": "Nivel de significancia (α)",
         }
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["secuencia"].queryset = SecuenciaBase.objects.all()
-
 class BinomialForm(forms.ModelForm):
     class Meta:
         model = Binomial

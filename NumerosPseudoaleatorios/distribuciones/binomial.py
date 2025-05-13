@@ -29,3 +29,12 @@ def calcular_esperanza(p, n):
 
 def calcular_varianza(p, n):
     return n * p * (1 - p)
+
+
+# simulados = simular_binomial(numeros_aleatorios, n, p)
+# print("Valores binomiales simulados:", simulados)
+
+# valoresX, valoresProb, acumuladas = calcular_probabilidades(p, n)
+# print("\nDistribución binomial teórica (P(X = x)):")
+# for x, prob in zip(valoresX, valoresProb):
+#     print(f"x = {x}, P = {round(prob, 4)}")
