@@ -1,42 +1,70 @@
-#  supongamos que la probabilidad de que un cliente nuevo guste de un producto es 0.8, y llegan 5 clientes nuevos a la tienda.
-#  Queremos saber la probabilidad de que exactamente 4 de ellos les guste el producto.
+from collections import Counter
+import math
 
-import numpy as np
-from scipy.stats import binom, chisquare
+def factorial(n):
+    res = 1
+    for x in range (2, n + 1):
+        res *= x
+    return res
 
-def verificar_distribucion_binomial():
-    """
-    Verifica si los datos provienen de una distribución binomial con parámetros n y p.
+def combinatoria(n, x):
+    return factorial(n) / (factorial(x) * factorial(n - x))
+
+def calcular_probabilidades(p, n):
+    valoresX = []
+    valoresProbabilidad = []
+    valoresAcumulados = []
+    suma_acumulada = 0
     
-    Args:
-        n (int): Número de ensayos.
-        p (float): Probabilidad de éxito.
-        datos (list or np.array): Datos observados.
+    for x in range (n + 1):
+        valoresX.append(x)
+        prob = combinatoria(n, x) * math.pow(p, x) * math.pow(1 - p, n - x)
+        valoresProbabilidad.append(prob)
+        suma_acumulada += prob
+        valoresAcumulados.append(suma_acumulada)
+
+    return valoresX, valoresProbabilidad, valoresAcumulados
+
+def calcular_esperanza(p, n):
+    return n * p
+
+def calcular_varianza(p, n):
+    return n * p * (1 - p)
+
+def normalizar_numero(x):
+    x = abs(int(x))  
+    digitos = len(str(x))
+    return x / (10 ** digitos)
+
+def simular_binomial(numeros_aleatorios, n, p):
+    valores_x_simulacion = []
     
-    Returns:
-        tuple: (bool, str) donde el booleano indica si se cumple la hipótesis nula
-               y el string contiene el mensaje correspondiente.
-    """
-    n = 5
-    p = 0.8
-    np.random.seed(42)
-    datos = np.random.binomial(n, p, 100) 
+    for i in range(0, len(numeros_aleatorios), n):
+        grupo = numeros_aleatorios[i:i + n]
+        exitos = 0
+
+        for u in grupo:
+            u = normalizar_numero(u)
+            if u < p:
+                exitos += 1
+
+        valores_x_simulacion.append(exitos)
     
-    # Frecuencia observada de cada posible valor (0 a n)
-    valores_posibles = np.arange(n + 1)
-    frecuencia_observada = np.array([np.sum(datos == k) for k in valores_posibles])
+    total = len(valores_x_simulacion)
+    frecuencias = Counter(valores_x_simulacion)
+    valores_x_simulados = list(range(n + 1))
+    
+    acumulado = 0
+    valores_acumulados_simulados = []
+    valores_probabilidad_simulados = []
 
-    # Probabilidades teóricas para cada valor según la binomial
-    probabilidades_teoricas = binom.pmf(valores_posibles, n, p)
+    for x in valores_x_simulados:
+        relativa = frecuencias.get(x, 0) / total
+        valores_probabilidad_simulados.append(relativa)
+        acumulado += relativa
+        valores_acumulados_simulados.append(acumulado)
+    print("frecuencia relativa (lo mismo que valores probabilidad): ", valores_probabilidad_simulados)
+    print("valores acumulados simulacion: ", valores_acumulados_simulados)
+    print("valores x: ", valores_x_simulados)
 
-    # Frecuencia esperada = probabilidad teórica * tamaño muestra
-    frecuencia_esperada = probabilidades_teoricas * len(datos)
-
-    # Test Chi-cuadrado
-    chi2_stat, p_valor = chisquare(f_obs=frecuencia_observada, f_exp=frecuencia_esperada)
-
-    # Resultado
-    if p_valor > 0.05:
-        return True, "No se rechaza la hipótesis nula: los datos pueden venir de la distribución binomial especificada."
-    else:
-        return False, "Se rechaza la hipótesis nula: los datos probablemente no vienen de la distribución binomial especificada."
+    return valores_x_simulados, valores_acumulados_simulados, valores_probabilidad_simulados

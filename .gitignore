@@ -1,9 +1,10 @@
 # Archivos de configuraci�n de Visual Studio
 /.vs
-/Trabajo Integrador.pyproj
-/Trabajo Integrador.sln
+*.pyproj
+*.sln
 *.json
 
 # Otros archivos temporales
 __pycache__/
 *.pyc
+*.user
