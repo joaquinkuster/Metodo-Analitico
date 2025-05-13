@@ -1,3 +1,4 @@
+from collections import Counter
 import math
 
 def factorial(n):
@@ -30,11 +31,40 @@ def calcular_esperanza(p, n):
 def calcular_varianza(p, n):
     return n * p * (1 - p)
 
+def normalizar_numero(x):
+    x = abs(int(x))  
+    digitos = len(str(x))
+    return x / (10 ** digitos)
 
-# simulados = simular_binomial(numeros_aleatorios, n, p)
-# print("Valores binomiales simulados:", simulados)
+def simular_binomial(numeros_aleatorios, n, p):
+    valores_x_simulacion = []
+    
+    for i in range(0, len(numeros_aleatorios), n):
+        grupo = numeros_aleatorios[i:i + n]
+        exitos = 0
 
-# valoresX, valoresProb, acumuladas = calcular_probabilidades(p, n)
-# print("\nDistribución binomial teórica (P(X = x)):")
-# for x, prob in zip(valoresX, valoresProb):
-#     print(f"x = {x}, P = {round(prob, 4)}")
+        for u in grupo:
+            u = normalizar_numero(u)
+            if u < p:
+                exitos += 1
+
+        valores_x_simulacion.append(exitos)
+    
+    total = len(valores_x_simulacion)
+    frecuencias = Counter(valores_x_simulacion)
+    valores_x_simulados = list(range(n + 1))
+    
+    acumulado = 0
+    valores_acumulados_simulados = []
+    valores_probabilidad_simulados = []
+
+    for x in valores_x_simulados:
+        relativa = frecuencias.get(x, 0) / total
+        valores_probabilidad_simulados.append(relativa)
+        acumulado += relativa
+        valores_acumulados_simulados.append(acumulado)
+    print("frecuencia relativa (lo mismo que valores probabilidad): ", valores_probabilidad_simulados)
+    print("valores acumulados simulacion: ", valores_acumulados_simulados)
+    print("valores x: ", valores_x_simulados)
+
+    return valores_x_simulados, valores_acumulados_simulados, valores_probabilidad_simulados

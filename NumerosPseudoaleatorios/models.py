@@ -248,7 +248,7 @@ class ChiCuadrado(TesterBase):
         super().save(*args, **kwargs)
 
 
-class DistribucionBase(models.Model):
+class DistribucionBase(models.Model): 
     tipo = models.CharField(
         max_length=3,
         choices=TipoDistribucion.choices,
@@ -260,18 +260,30 @@ class DistribucionBase(models.Model):
     valores_acumulados = models.JSONField(
         default=list, validators=[validar_numeros]
     )  # Valores de la función de distribución acumulada
+
+    valores_x_simulados = models.JSONField(
+        default=list, validators=[validar_numeros]
+    )  # Valores simulados de X
+    
+    valores_probabilidad_simulados = models.JSONField(
+        default=list, validators=[validar_numeros]
+    )  # Valores simulados de la función de densidad
+
+    valores_acumulados_simulados = models.JSONField(
+        default=list, validators=[validar_numeros]
+    )  # Valores simulados de la función de distribución acumulada
+
     esperanza = models.FloatField()
     varianza = models.FloatField()
+    secuencia = models.ForeignKey(SecuenciaBase, on_delete=models.CASCADE, default=1)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ["-fecha_creacion"]
 
     def __str__(self):
-        pares = zip(self.valoresX, self.valoresY)
-        return (f"({x}, {y}), " for x, y in pares)
-
-
+        pares = zip(self.valores_x, self.valores_probabilidad)
+        return ", ".join(f"({x}, {y})" for x, y in pares)
 class Binomial(DistribucionBase):
     p = models.FloatField(
         validators=[validar_probabilidad_exito]
@@ -296,13 +308,19 @@ class Binomial(DistribucionBase):
         if self.varianza <= 0:
             raise ValidationError("La varianza V(x) debe ser un número positivo (≠ 0).")        
         
+    def simular_binomial(self, numeros_aleatorios):
+        self.valores_x_simulados, self.valores_acumulados_simulados, self.valores_probabilidad_simulados = binomial.simular_binomial(numeros_aleatorios, self.n, self.p)
+        validar_numeros(self.valores_x_simulados)
+        validar_numeros(self.valores_acumulados_simulados)
+        validar_numeros(self.valores_probabilidad_simulados)
+
     def save(self, *args, **kwargs):
         self.tipo = TipoDistribucion.BINOMIAL
         self.calcular_probabilidades()
+        self.simular_binomial(self.secuencia.numeros)
         self.calcular_esperenza()
         self.calcular_varianza()
         super().save(*args, **kwargs)
-
 
 class Exponencial(DistribucionBase):
     tasa = models.FloatField(validators=[validar_tasa])  # Corresponde a λ

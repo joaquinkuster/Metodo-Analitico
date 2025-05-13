@@ -45,21 +45,35 @@
                             </button>
                         </div>
                     </div>
-
                     <!-- Formulario Binomial -->
                     <form method="post" action="{% url 'distribucion:generar' %}" id="formToggle1"
                         class="{% if tipo_distribucion is not None and tipo_distribucion != 'BI' %} form-inactivo {% endif %}">
                         {% csrf_token %}
                         <input type="hidden" name="tipo_distribucion" value="BI">
                         <div class="row g-3">
-                            <div class="col-md-6">
-                                <label for="{{ binomial_form.p.id_for_label }}" class="form-label fw-bold">
-                                    {{ binomial_form.p.label }}</label>
-                                {{ binomial_form.p|add_class:"form-control" }}
-                                {% if binomial_form.p.errors %}
-                                <div class="invalid-feedback d-block">{{ binomial_form.p.errors.0 }}</div>
+                            <!-- Selección de Secuencia -->
+                            <div class="mb-3">
+                                <label for="{{ binomial_form.secuencia.label }}" class="form-label fw-bold">
+                                    {{ binomial_form.secuencia.label }}
+                                </label>
+                                {{ binomial_form.secuencia|add_class:"form-select" }}
+                                {% if binomial_form.secuencia.errors %}
+                                <div class="invalid-feedback d-block">{{ binomial_form.secuencia.errors.0 }}</div>
                                 {% endif %}
                             </div>
+                            {% comment %} Probabilidad de exito  {% endcomment %}
+                            <div class="col-md-6">
+                                <label for="{{ binomial_form.p.id_for_label }}" class="form-label fw-bold">
+                                    {{ binomial_form.p.label }}
+                                </label>
+                                {{ binomial_form.p|add_class:"form-control" }}
+                                {% if binomial_form.p.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ binomial_form.p.errors.0 }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% comment %} Cantidad de muestras {% endcomment %}
                             <div class="col-md-6">
                                 <label for="{{ binomial_form.n.id_for_label }}" class="form-label fw-bold">
                                     {{ binomial_form.n.label }}</label>
@@ -68,7 +82,6 @@
                                 <div class="invalid-feedback d-block">{{ binomial_form.n.errors.0 }}</div>
                                 {% endif %}
                             </div>
-
                         </div>
                         <div class="d-grid mt-4">
                             <button type="submit" class="btn btn-success">
