@@ -1,0 +1,213 @@
+{% extends "layouts/base.html" %}
+{% load form_tags %}
+
+{% block title %} Generar Distribuciones {% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <!-- Mensajes flash -->
+    {% for message in messages %}
+    {% if 'success' in message.tags %}
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% elif 'error' in message.tags %}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endif %}
+    {% endfor %}
+
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h2 class="h5 mb-0">
+                            <i class="bi bi-list-columns-reverse me-2"></i>Ejemplo de distribucion binomial
+                        </h2>
+                    </div>
+                </div>
+                <div class="card-body mt-0">
+                    <div class="bg-light p-3 rounded">
+                        <p class="text-muted">El gerente del sector control de calidad toma muestras que salen de una linea de ensamblaje y desea verificar sobre la base de datos la cantidad de chip con defectos observados en 200 dias. Ayude al gerente con todos los pasos necesarios para comprobar si es cierto que se puede ajustar bajo un modelo de distribucion binomial con n = 10 y p = 0.05</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <!-- Panel de Generación -->
+        <div class="col-xxl-4 col-lg-6">
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="h5 mb-0">
+                        <i class="bi bi-bar-chart-steps me-2"></i>Generar Distribución
+                    </h2>
+                </div>
+                    <div class="card-body">
+                        <!-- Selector de Distribución -->
+                        <div class="mb-4">
+                            <div class="btn-group w-100" role="group">
+                                <button
+                                    class="btn btn-outline-primary {% if tipo_distribucion is None or tipo_distribucion == 'BI' %}active{% endif %}"
+                                    id="btnToggle1">
+                                    Binomial
+                                </button>
+                            </div>
+                        </div>
+                        <!-- Formulario Binomial -->
+                        <form method="post" action="{% url 'distribucion:generar' %}" id="formToggle1">
+                            {% csrf_token %}
+                            <input type="hidden" name="tipo_distribucion" value="BI">
+                            <div class="row g-3">   
+                                {% comment %} Probabilidad de exito  {% endcomment %}
+                                <div class="col-md-6">
+                                    <label for="{{ binomial_form.p.id_for_label }}" class="form-label fw-bold">
+                                        {{ binomial_form.p.label }}
+                                    </label>
+                                    {{ binomial_form.p|add_class:"form-control" }}
+                                    {% if binomial_form.p.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ binomial_form.p.errors.0 }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% comment %} Cantidad de muestras {% endcomment %}
+                                <div class="col-md-6">
+                                    <label for="{{ binomial_form.n.id_for_label }}" class="form-label fw-bold">
+                                        {{ binomial_form.n.label }}</label>
+                                    {{ binomial_form.n|add_class:"form-control" }}
+                                    {% if binomial_form.n.errors %}
+                                    <div class="invalid-feedback d-block">{{ binomial_form.n.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="d-grid mt-4">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bi bi-play-circle me-2"></i>Generar Binomial
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+            </div>
+        </div>
+
+        <!-- Resultados del Ejemplo -->
+        <div class="col-xxl-8 col-lg-6">
+            <div class="card border-0 shadow-lg h-100">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h2 class="h5 mb-0">
+                            <i class="bi bi-list-columns-reverse me-2"></i>Resultados del ejemplo
+                        </h2>
+                    </div>
+                </div>
+            <div class="card-body">
+                <!-- Parámetros específicos -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h5 class="fw-bold">Probabilidad de éxito <code>(p)</code></h5>
+                        <div class="bg-light p-3 rounded">
+                            <p class="text-muted mb-0">{{ distribucion.binomial.p }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h5 class="fw-bold">Número de ensayos <code>(n)</code></h5>
+                        <div class="bg-light p-3 rounded">
+                            <p class="text-muted mb-0">{{ distribucion.binomial.n }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Estadísticos -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h5 class="fw-bold">Esperanza <code>E(x)</code></h5>
+                        <div class="bg-light p-3 rounded">
+                            <p class="text-muted mb-0">{{ distribucion.esperanza|floatformat:2 }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h5 class="fw-bold">Varianza <code>V(x)</code></h5>
+                        <div class="bg-light p-3 rounded">
+                            <p class="text-muted mb-0">{{ distribucion.varianza|floatformat:2 }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Valores de x -->
+                <div class="mb-4">
+                    <h5 class="fw-bold">Marcas de clase</h5>
+                    <div class="bg-light p-3 rounded">
+                        <code>
+                        {% if distribucion.tipo == 'EXP' %}
+                            {% for v in distribucion.valores_x %}
+                                {{ v|floatformat:1 }}{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            {{ distribucion.valores_x|join:", " }}
+                        {% endif %}
+                        </code>
+                    </div>
+                </div>
+
+                <!-- Valores de probabilidad -->
+                <div class="mb-4">
+                    <h5 class="fw-bold">Probabilidades puntuales <code>f(x)</code></h5>
+                    <div class="bg-light p-3 rounded">
+                        <code>
+                        {% for v in distribucion.valores_probabilidad %}
+                            {{ v|floatformat:4 }}{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                        </code>
+                    </div>
+                </div>
+
+                <!-- Valores acumulados -->
+                <div class="mb-4">
+                    <h5 class="fw-bold">Probabilidades acumuladas <code>F(x)</code></h5>
+                    <div class="bg-light p-3 rounded">
+                        <code>
+                        {% for v in distribucion.valores_acumulados %}
+                            {{ v|floatformat:4 }}{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                        </code>
+                    </div>
+                </div>
+
+                <!-- Fecha de creación -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h5 class="fw-bold">Fecha de Creación</h5>
+                        <div class="bg-light p-3 rounded">
+                            <p class="text-muted mb-0">{{ distribucion.fecha_creacion|date:"d/m/Y H:i" }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gráfico de densidad / probabilidad (PDF) -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="fw-bold">Función de densidad / probabilidad <code>f(x)</code></h5>
+                        <p class="mb-2"><em>X</em> &sim; Bin(<strong>{{ distribucion.binomial.n }}</strong>, <strong>{{ distribucion.binomial.p }}</strong>)</p>
+                        <div id="grafico-pdf"></div>
+                    </div>
+                </div>
+
+                <!-- Gráfico de distribución acumulada (CDF) -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="fw-bold">Función de distribución acumulada <code>F(x)</code></h5>
+                        <p class="mb-2"><em>X</em> &sim; Bin(<strong>{{ distribucion.binomial.n }}</strong>, <strong>{{ distribucion.binomial.p }}</strong>)</p>
+                        <div id="grafico-cdf"></div>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

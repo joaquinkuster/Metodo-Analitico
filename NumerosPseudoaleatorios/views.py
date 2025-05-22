@@ -386,3 +386,24 @@ def ver_distribucion(request, id):
     return render(request, "pages/distribucion/ver.html", {
         "distribucion": distribucion,
     })
+
+def menu_ejemplos(request):
+    # Renderizamos la plantilla de detalle
+    return render(request, "pages/distribucion/ejemplos/menu.html")
+
+
+def ejemplos_distribucion(request, distribucion):
+    binomial_form = BinomialForm()
+    exponencial_form = ExponencialForm()
+    
+    if distribucion is None:
+        messages.error(request, "No se encontró la distribución para visualizar.")
+        return redirect("distribucion:generar")
+    if distribucion == "binomial":
+        return render(request, "pages/distribucion/ejemplos/binomial.html", {
+            "binomial_form": binomial_form
+        })
+    elif distribucion == "exponencial":
+        return render(request, "pages/distribucion/ejemplos/exponencial.html", {
+            "exponencial_form": exponencial_form
+        })

@@ -153,17 +153,17 @@
                                     </td>
                                     <td>
                                         <span class="d-inline-block text-truncate">
-                                            {{ d.valores_x|join:", "|truncatechars:20 }}
+                                            {{ d.valores_x|join:", "|truncatechars:15 }}
                                         </span>
                                     </td>
                                     <td>
                                         <span class="d-inline-block text-truncate">
-                                            {{ d.valores_probabilidad|join:", "|truncatechars:20 }}
+                                            {{ d.valores_probabilidad|join:", "|truncatechars:15 }}
                                         </span>
                                     </td>
                                     <td>
                                         <span class="d-inline-block text-truncate">
-                                            {{ d.valores_acumulados|join:", "|truncatechars:20 }}
+                                            {{ d.valores_acumulados|join:", "|truncatechars:15 }}
                                         </span>
                                     </td>
                                     <td>{{ d.esperanza|floatformat:2 }}</td>

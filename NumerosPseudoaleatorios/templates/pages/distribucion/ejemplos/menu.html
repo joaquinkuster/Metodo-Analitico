@@ -1,0 +1,13 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Ejemplos de distribuciones {% endblock %}
+
+{% block body %}
+<div class="menu-principal text-center">
+    <h1 class="fw-bold">G02 - 2025 MS - Método Analítico</h1>
+    <div class="d-grid gap-4 col-8 col-md-4 mx-auto">
+        <a href="{% url 'distribucion:ejemplos:ejemplo' 'binomial' %}" class="btn btn-primary btn-lg">Ejemplo de distribucion binomial</a>
+        <a href="{% url 'distribucion:ejemplos:ejemplo' 'exponencial' %}" class="btn btn-primary btn-lg">Ejemplo de distribucion exponencial</a>
+    </div>
+</div>
+{% endblock %}
