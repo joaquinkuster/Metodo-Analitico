@@ -177,8 +177,11 @@ class BinomialForm(forms.ModelForm):
 class ExponencialForm(forms.ModelForm):
     class Meta:
         model = Exponencial
-        fields = ["tasa"]
+        fields = ["secuencia", "tasa"]
         widgets = {
+            "secuencia": forms.Select(
+                attrs={"placeholder": "Seleccioná secuencia", "required": True}
+            ),
             "tasa": forms.NumberInput(
                 attrs={
                     "min": 0.01,
@@ -189,5 +192,6 @@ class ExponencialForm(forms.ModelForm):
             ),
         }
         labels = {
+            "secuencia": "Secuencia",
             "tasa": "Tasa (λ)",
         }

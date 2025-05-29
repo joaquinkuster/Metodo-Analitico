@@ -336,7 +336,7 @@ def generar_distribucion(request):
     # Inicializar ambos formularios
     binomial_form = BinomialForm()
     exponencial_form = ExponencialForm()
-    tipo = request.POST.get("tipo_distribucion") or None
+    tipo = request.POST.get("tipo_distribucion") or "BI"
     form = None
 
     # Procesar POST

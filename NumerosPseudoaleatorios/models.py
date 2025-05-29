@@ -275,7 +275,7 @@ class DistribucionBase(models.Model):
 
     esperanza = models.FloatField()
     varianza = models.FloatField()
-    secuencia = models.ForeignKey(SecuenciaBase, on_delete=models.CASCADE, default=1, null=True)
+    secuencia = models.ForeignKey(SecuenciaBase, on_delete=models.CASCADE, default=1)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -333,6 +333,14 @@ class Exponencial(DistribucionBase):
         validar_numeros(self.valores_probabilidad)
         validar_numeros(self.valores_acumulados)
     
+    def calcular_exponencial_desde_datos(self, numeros_aleatorios):
+        self.valores_x_simulados, self.valores_probabilidad_simulados, self.valores_acumulados_simulados = (
+            exponencial.calcular_exponencial_desde_datos(numeros_aleatorios, self.tasa)
+        )
+        validar_numeros(self.valores_x_simulados)
+        validar_numeros(self.valores_probabilidad_simulados)
+        validar_numeros(self.valores_acumulados_simulados)
+
     def calcular_esperenza(self):
         self.esperanza = exponencial.calcular_esperanza(self.tasa)
         if self.esperanza <= 0:
@@ -346,6 +354,7 @@ class Exponencial(DistribucionBase):
     def save(self, *args, **kwargs):
         self.tipo = TipoDistribucion.EXPONENCIAL
         self.calcular_probabilidades()
+        self.calcular_exponencial_desde_datos(self.secuencia.numeros)
         self.calcular_esperenza()
         self.calcular_varianza()
         super().save(*args, **kwargs)
