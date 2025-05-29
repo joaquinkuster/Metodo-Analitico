@@ -275,7 +275,7 @@ class DistribucionBase(models.Model):
 
     esperanza = models.FloatField()
     varianza = models.FloatField()
-    secuencia = models.ForeignKey(SecuenciaBase, on_delete=models.CASCADE, default=1)
+    secuencia = models.ForeignKey(SecuenciaBase, on_delete=models.CASCADE, default=1, null=True)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
 
     class Meta:

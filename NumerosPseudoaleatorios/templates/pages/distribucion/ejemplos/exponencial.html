@@ -32,58 +32,16 @@
                 </div>
                 <div class="card-body mt-0">
                     <div class="bg-light p-3 rounded">
-                        <p class="text-muted">El tiempo de revisión del motor de un avión sigue una distribución exponencial con media 22 minutos. a) Encontrar la probabilidad de que el tiempo de revisión sea menor a 10 minutos. b) ¿Cuál es el tiempo de revisión de un motor superado por el 10% de los tiempos de revisión?. c) El costo de revisión es de 200 unidades monetarias fijas al que se le suma 10 unidades monetarias por el tiempo que dure la revisión. Encontrar la media y la varianza del costo.</p>
+                        <p class="text-muted">Comprobar que el tiempo de revisión del motor de un avión puede ajustarse a una distribución exponencial con media 22 minutos</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
     <div class="row">
-        <!-- Panel de Generación -->
-        <div class="col-xxl-4 col-lg-6">
-            <div class="card border-0 shadow-lg">
-                <div class="card-header bg-primary text-white">
-                    <h2 class="h5 mb-0">
-                        <i class="bi bi-bar-chart-steps me-2"></i>Generar Distribución
-                    </h2>
-                </div>
-                    <div class="card-body">
-                        <!-- Selector de Distribución -->
-                        <div class="mb-4">
-                            <div class="btn-group w-100" role="group">
-                                <button
-                                    class="btn btn-primary"
-                                    id="btnToggle1">
-                                    Exponencial
-                                </button>
-                            </div>
-                        </div>
-                      <!-- Formulario Exponencial -->
-                    <form method="post" action="{% url 'distribucion:generar' %}" id="formToggle2">
-                        {% csrf_token %}
-                        <input type="hidden" name="tipo_distribucion" value="EXP">
-                        <div class="row g-3">
-                            <div class="col-12">
-                                <label for="{{ exponencial_form.tasa.id_for_label }}" class="form-label fw-bold">
-                                    {{ exponencial_form.tasa.label }}</label>
-                                {{ exponencial_form.tasa|add_class:"form-control" }}
-                                {% if exponencial_form.tasa.errors %}
-                                <div class="invalid-feedback d-block">{{ exponencial_form.tasa.errors.0 }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="d-grid mt-4">
-                            <button type="submit" class="btn btn-success">
-                                <i class="bi bi-play-circle me-2"></i>Generar Exponencial
-                            </button>
-                        </div>
-                    </form>
-                    </div>
-            </div>
-        </div>
 
         <!-- Resultados del Ejemplo -->
-        <div class="col-xxl-8 col-lg-6">
+        <div class="col-xxl-12 col-lg-12">
             <div class="card border-0 shadow-lg h-100">
                 <div class="card-header bg-primary text-white">
                     <div class="d-flex justify-content-between align-items-center">
@@ -98,7 +56,7 @@
                         <div class="col-md-6">
                             <h5 class="fw-bold">Tasa <code>(λ)</code></h5>
                             <div class="bg-light p-3 rounded">
-                                <p class="text-muted mb-0">{{ distribucion.exponencial.tasa }}</p>
+                                <p class="text-muted mb-0">1/22</p>
                             </div>
                         </div>
                     </div>
@@ -108,13 +66,13 @@
                         <div class="col-md-6">
                             <h5 class="fw-bold">Esperanza <code>E(x)</code></h5>
                             <div class="bg-light p-3 rounded">
-                                <p class="text-muted mb-0">{{ distribucion.esperanza|floatformat:2 }}</p>
+                                <p class="text-muted mb-0">22</p>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <h5 class="fw-bold">Varianza <code>V(x)</code></h5>
                             <div class="bg-light p-3 rounded">
-                                <p class="text-muted mb-0">{{ distribucion.varianza|floatformat:2 }}</p>
+                                <p class="text-muted mb-0">484</p>
                             </div>
                         </div>
                     </div>
@@ -124,9 +82,7 @@
                         <h5 class="fw-bold">Marcas de clase</h5>
                         <div class="bg-light p-3 rounded">
                             <code>
-                                {% for v in distribucion.valores_x %}
-                                    {{ v|floatformat:1 }}{% if not forloop.last %}, {% endif %}
-                                {% endfor %}
+                                0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 9.5, 10.0, 10.5, 11.0, 11.5, 12.0, 12.5, 13.0, 13.5, 14.0, 14.5, 15.0, 15.5, 16.0, 16.5, 17.0, 17.5, 18.0, 18.5, 19.0, 19.5, 20.0
                             </code>
                         </div>
                     </div>
@@ -136,9 +92,7 @@
                         <h5 class="fw-bold">Probabilidades puntuales <code>f(x)</code></h5>
                         <div class="bg-light p-3 rounded">
                             <code>
-                            {% for v in distribucion.valores_probabilidad %}
-                                {{ v|floatformat:4 }}{% if not forloop.last %}, {% endif %}
-                            {% endfor %}
+                            0.045455, 0.044433, 0.043435, 0.042459, 0.041505, 0.040572, 0.039660, 0.038769, 0.037898, 0.037046, 0.036214, 0.035400, 0.034605, 0.033827, 0.033067, 0.032324, 0.031597, 0.030887, 0.030193, 0.029515, 0.028852, 0.028203, 0.027570, 0.026950, 0.026344, 0.025752, 0.025174, 0.024608, 0.024055, 0.023515, 0.022470, 0.021965, 0.021471, 0.020989, 0.020517, 0.020056, 0.019605, 0.019165, 0.018734, 0.018313
                             </code>
                         </div>
                     </div>
@@ -148,20 +102,8 @@
                         <h5 class="fw-bold">Probabilidades acumuladas <code>F(x)</code></h5>
                         <div class="bg-light p-3 rounded">
                             <code>
-                            {% for v in distribucion.valores_acumulados %}
-                                {{ v|floatformat:4 }}{% if not forloop.last %}, {% endif %}
-                            {% endfor %}
+                            0.000000, 0.022471, 0.044437, 0.065909, 0.086899, 0.0107418, 0.0127475, 0.0147081, 0.166247, 0.184982, 0.203297, 0.221199, 0.238700, 0.255807, 0.272529, 0.288876, 0.304856, 0.320477, 0.335746, 0.350673, 0.365264, 0.379527, 0.393469, 0.407099, 0.420422, 0.433445, 0.446176, 0.470787, 0.482679, 0.494303, 0.505667, 0.516775, 0.527633, 0.538248, 0.548624, 0.558767, 0.568682, 0.578374, 0.587848, 0.597110
                             </code>
-                        </div>
-                    </div>
-
-                    <!-- Fecha de creación -->
-                    <div class="row mb-4">
-                        <div class="col-md-6">
-                            <h5 class="fw-bold">Fecha de Creación</h5>
-                            <div class="bg-light p-3 rounded">
-                                <p class="text-muted mb-0">{{ distribucion.fecha_creacion|date:"d/m/Y H:i" }}</p>
-                            </div>
                         </div>
                     </div>
 
@@ -170,7 +112,7 @@
                         <div class="card-body">
                             <h5 class="fw-bold">Función de densidad / probabilidad <code>f(x)</code></h5>
                             <p class="mb-2"><em>X</em> &sim; Exp(&lambda; = <strong>
-                                    {{ distribucion.exponencial.tasa }}</strong>)</p>
+                                    1/22</strong>)</p>
                             <div id="grafico-pdf"></div>
                         </div>
                     </div>
@@ -180,7 +122,7 @@
                         <div class="card-body">
                             <h5 class="fw-bold">Función de distribución acumulada <code>F(x)</code></h5>
                             <p class="mb-2"><em>X</em> &sim; Exp(&lambda; = <strong>
-                                    {{ distribucion.exponencial.tasa }}</strong>)</p>
+                                    1/22</strong>)</p>
                             <div id="grafico-cdf"></div>
                         </div>
                     </div>
@@ -189,4 +131,45 @@
         </div>
     </div>
 </div>
+
+
+<script src="https://cdn.plot.ly/plotly-2.30.0.min.js"></script>
+<script>
+    const xs = [0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 9.5, 10.0, 10.5, 11.0, 11.5, 12.0, 12.5, 13.0, 13.5, 14.0, 14.5, 15.0, 15.5, 16.0, 16.5, 17.0, 17.5, 18.0, 18.5, 19.0, 19.5, 20.0];
+    const pdf = [0.045455, 0.044433, 0.043435, 0.042459, 0.041505, 0.040572, 0.039660, 0.038769, 0.037898, 0.037046, 0.036214, 0.035400, 0.034605, 0.033827, 0.033067, 0.032324, 0.031597, 0.030887, 0.030193, 0.029515, 0.028852, 0.028203, 0.027570, 0.026950, 0.026344, 0.025752, 0.025174, 0.024608, 0.024055, 0.023515, 0.022470, 0.021965, 0.021471, 0.020989, 0.020517, 0.020056, 0.019605, 0.019165, 0.018734, 0.018313]
+;
+    const cdf = [0.000000, 0.022471, 0.044437, 0.065909, 0.086899, 0.107418, 0.127475, 0.147081, 0.166247, 0.184982, 0.203297, 0.221199, 0.238700, 0.255807, 0.272529, 0.288876, 0.304856, 0.320477, 0.335746, 0.350673, 0.365264, 0.379527, 0.393469, 0.407099, 0.420422, 0.433445, 0.446176, 0.458621, 0.470787, 0.482679, 0.494303, 0.505667, 0.516775, 0.527633, 0.538248, 0.548624, 0.558767, 0.568682, 0.578374, 0.587848, 0.597110];
+
+    // Configuración condicional para el gráfico de f(x)
+
+    const tipoPdf = 'scatter';
+    const modoPdf = 'lines';
+    const tituloY = 'f(x)';
+
+    Plotly.newPlot('grafico-pdf', [{
+        x: xs,
+        y: pdf,
+        type: tipoPdf,
+        mode: modoPdf
+    }], {
+        xaxis: { title: 'x' },
+        yaxis: { title: tituloY }
+    });
+
+    // Gráfico de F(x)
+    Plotly.newPlot('grafico-cdf', [{
+        x: xs,
+        y: cdf,
+        type: 'scatter',
+        mode: 'lines'
+    }], {
+        xaxis: { title: 'x' },
+        yaxis: { title: 'F(x)' }
+    });
+
+    window.addEventListener('resize', function () {
+        Plotly.Plots.resize('grafico-pdf');
+        Plotly.Plots.resize('grafico-cdf');
+    });
+</script>
 {% endblock %}

@@ -31,72 +31,54 @@
                     </div>
                 </div>
                 <div class="card-body mt-0">
-                    <div class="bg-light p-3 rounded">
+                    <div class="bg-light p-3 rounded mb-3">
                         <p class="text-muted">El gerente del sector control de calidad toma muestras que salen de una linea de ensamblaje y desea verificar sobre la base de datos la cantidad de chip con defectos observados en 200 dias. Ayude al gerente con todos los pasos necesarios para comprobar si es cierto que se puede ajustar bajo un modelo de distribucion binomial con n = 10 y p = 0.05</p>
+                    </div>
+                        <div class="table-responsive rounded">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light text-center">
+                                    <tr>
+                                        <th>Numero de unidades con defecto</th>
+                                        <th>0</th>
+                                        <th>1</th>
+                                        <th>2 o más</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="table-light text-center">
+                                    <tr>
+                                        <th>
+                                            <span> 
+                                                    Cantidades defectuosas
+                                            </span>
+                                        </th>
+                                        <td>
+                                            <span class="d-inline-block text-truncate">
+                                                    138
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="d-inline-block text-truncate">
+                                                53
+                                            </span>
+                                        </td>
+
+                                        <td>
+                                            <span class="d-inline-block text-truncate">
+                                                9
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
                     </div>
                 </div>
             </div>
         </div>
     </div>
     <div class="row">
-        <!-- Panel de Generación -->
-        <div class="col-xxl-4 col-lg-6">
-            <div class="card border-0 shadow-lg">
-                <div class="card-header bg-primary text-white">
-                    <h2 class="h5 mb-0">
-                        <i class="bi bi-bar-chart-steps me-2"></i>Generar Distribución
-                    </h2>
-                </div>
-                    <div class="card-body">
-                        <!-- Selector de Distribución -->
-                        <div class="mb-4">
-                            <div class="btn-group w-100" role="group">
-                                <button
-                                    class="btn btn-outline-primary {% if tipo_distribucion is None or tipo_distribucion == 'BI' %}active{% endif %}"
-                                    id="btnToggle1">
-                                    Binomial
-                                </button>
-                            </div>
-                        </div>
-                        <!-- Formulario Binomial -->
-                        <form method="post" action="{% url 'distribucion:generar' %}" id="formToggle1">
-                            {% csrf_token %}
-                            <input type="hidden" name="tipo_distribucion" value="BI">
-                            <div class="row g-3">   
-                                {% comment %} Probabilidad de exito  {% endcomment %}
-                                <div class="col-md-6">
-                                    <label for="{{ binomial_form.p.id_for_label }}" class="form-label fw-bold">
-                                        {{ binomial_form.p.label }}
-                                    </label>
-                                    {{ binomial_form.p|add_class:"form-control" }}
-                                    {% if binomial_form.p.errors %}
-                                    <div class="invalid-feedback d-block">
-                                        {{ binomial_form.p.errors.0 }}
-                                    </div>
-                                    {% endif %}
-                                </div>
-                                {% comment %} Cantidad de muestras {% endcomment %}
-                                <div class="col-md-6">
-                                    <label for="{{ binomial_form.n.id_for_label }}" class="form-label fw-bold">
-                                        {{ binomial_form.n.label }}</label>
-                                    {{ binomial_form.n|add_class:"form-control" }}
-                                    {% if binomial_form.n.errors %}
-                                    <div class="invalid-feedback d-block">{{ binomial_form.n.errors.0 }}</div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <div class="d-grid mt-4">
-                                <button type="submit" class="btn btn-success">
-                                    <i class="bi bi-play-circle me-2"></i>Generar Binomial
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-            </div>
-        </div>
 
         <!-- Resultados del Ejemplo -->
-        <div class="col-xxl-8 col-lg-6">
+        <div class="col-xxl-12 col-lg-12">
             <div class="card border-0 shadow-lg h-100">
                 <div class="card-header bg-primary text-white">
                     <div class="d-flex justify-content-between align-items-center">
@@ -111,13 +93,13 @@
                     <div class="col-md-6">
                         <h5 class="fw-bold">Probabilidad de éxito <code>(p)</code></h5>
                         <div class="bg-light p-3 rounded">
-                            <p class="text-muted mb-0">{{ distribucion.binomial.p }}</p>
+                            <p class="text-muted mb-0">0.05</p>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <h5 class="fw-bold">Número de ensayos <code>(n)</code></h5>
                         <div class="bg-light p-3 rounded">
-                            <p class="text-muted mb-0">{{ distribucion.binomial.n }}</p>
+                            <p class="text-muted mb-0">10</p>
                         </div>
                     </div>
                 </div>
@@ -127,13 +109,13 @@
                     <div class="col-md-6">
                         <h5 class="fw-bold">Esperanza <code>E(x)</code></h5>
                         <div class="bg-light p-3 rounded">
-                            <p class="text-muted mb-0">{{ distribucion.esperanza|floatformat:2 }}</p>
+                            <p class="text-muted mb-0">0.50</p>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <h5 class="fw-bold">Varianza <code>V(x)</code></h5>
                         <div class="bg-light p-3 rounded">
-                            <p class="text-muted mb-0">{{ distribucion.varianza|floatformat:2 }}</p>
+                            <p class="text-muted mb-0">0.48</p>
                         </div>
                     </div>
                 </div>
@@ -143,13 +125,7 @@
                     <h5 class="fw-bold">Marcas de clase</h5>
                     <div class="bg-light p-3 rounded">
                         <code>
-                        {% if distribucion.tipo == 'EXP' %}
-                            {% for v in distribucion.valores_x %}
-                                {{ v|floatformat:1 }}{% if not forloop.last %}, {% endif %}
-                            {% endfor %}
-                        {% else %}
-                            {{ distribucion.valores_x|join:", " }}
-                        {% endif %}
+                        0, 1, 2 o más
                         </code>
                     </div>
                 </div>
@@ -159,9 +135,7 @@
                     <h5 class="fw-bold">Probabilidades puntuales <code>f(x)</code></h5>
                     <div class="bg-light p-3 rounded">
                         <code>
-                        {% for v in distribucion.valores_probabilidad %}
-                            {{ v|floatformat:4 }}{% if not forloop.last %}, {% endif %}
-                        {% endfor %}
+                        0,5987, 03151, 0,0862
                         </code>
                     </div>
                 </div>
@@ -171,20 +145,8 @@
                     <h5 class="fw-bold">Probabilidades acumuladas <code>F(x)</code></h5>
                     <div class="bg-light p-3 rounded">
                         <code>
-                        {% for v in distribucion.valores_acumulados %}
-                            {{ v|floatformat:4 }}{% if not forloop.last %}, {% endif %}
-                        {% endfor %}
+                        0,5987, 0,9138, 1,0000
                         </code>
-                    </div>
-                </div>
-
-                <!-- Fecha de creación -->
-                <div class="row mb-4">
-                    <div class="col-md-6">
-                        <h5 class="fw-bold">Fecha de Creación</h5>
-                        <div class="bg-light p-3 rounded">
-                            <p class="text-muted mb-0">{{ distribucion.fecha_creacion|date:"d/m/Y H:i" }}</p>
-                        </div>
                     </div>
                 </div>
 
@@ -210,4 +172,41 @@
         </div>
     </div>
 </div>
+
+<script src="https://cdn.plot.ly/plotly-2.30.0.min.js"></script>
+<script>
+    const xs = [0, 1, 2];
+    const pdf = [0.5987, 0.3151, 0.0862];
+    const cdf = [0.5987, 0.9138, 1.0000];
+
+    const tipoPdf = 'bar';
+    const modoPdf = '';
+    const tituloY = 'P(X=x)';
+
+    Plotly.newPlot('grafico-pdf', [{
+        x: xs,
+        y: pdf,
+        type: tipoPdf,
+        mode: modoPdf
+    }], {
+        xaxis: { title: 'x' },
+        yaxis: { title: tituloY }
+    });
+
+    // Gráfico de F(x)
+    Plotly.newPlot('grafico-cdf', [{
+        x: xs,
+        y: cdf,
+        type: 'scatter',
+        mode: 'lines'
+    }], {
+        xaxis: { title: 'x' },
+        yaxis: { title: 'F(x)' }
+    });
+
+    window.addEventListener('resize', function () {
+        Plotly.Plots.resize('grafico-pdf');
+        Plotly.Plots.resize('grafico-cdf');
+    });
+</script>
 {% endblock %}

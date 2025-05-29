@@ -44,6 +44,13 @@
                                 <i class="bi bi-bar-chart-line me-2"></i> Ver distribuciones
                             </a>
                         </li>
+                        <hr class="dropdown-divider">
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center {% if request.path == '/distribucion/ejemplos/menu' %}active bg-primary{% endif %}"
+                                href="{% url 'distribucion:ejemplos:menu' %}">
+                                <i class="bi bi-bar-chart-line me-2"></i> Ejemplos de distribución
+                            </a>
+                        </li>
                     </ul>
                 </li>
             </ul>
