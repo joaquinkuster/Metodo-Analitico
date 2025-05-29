@@ -145,8 +145,11 @@ class PokerForm(forms.ModelForm):
 class BinomialForm(forms.ModelForm):
     class Meta:
         model = Binomial
-        fields = ["p", "n"]
+        fields = ["secuencia", "p", "n"]
         widgets = {
+            "secuencia": forms.Select(
+                attrs={"placeholder": "Seleccioná secuencia", "required": True}
+            ),
             "p": forms.NumberInput(
                 attrs={
                     "min": 0,
@@ -166,6 +169,7 @@ class BinomialForm(forms.ModelForm):
             ),
         }
         labels = {
+            "secuencia": "Secuencia",
             "p": "Probabilidad de éxito (p)",
             "n": "Cantidad de ensayos (n)",
         }
@@ -173,8 +177,11 @@ class BinomialForm(forms.ModelForm):
 class ExponencialForm(forms.ModelForm):
     class Meta:
         model = Exponencial
-        fields = ["tasa"]
+        fields = ["secuencia", "tasa"]
         widgets = {
+            "secuencia": forms.Select(
+                attrs={"placeholder": "Seleccioná secuencia", "required": True}
+            ),
             "tasa": forms.NumberInput(
                 attrs={
                     "min": 0.01,
@@ -185,5 +192,6 @@ class ExponencialForm(forms.ModelForm):
             ),
         }
         labels = {
+            "secuencia": "Secuencia",
             "tasa": "Tasa (λ)",
         }

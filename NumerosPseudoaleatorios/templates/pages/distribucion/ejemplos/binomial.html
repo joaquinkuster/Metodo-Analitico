@@ -1,0 +1,212 @@
+{% extends "layouts/base.html" %}
+{% load form_tags %}
+
+{% block title %} Generar Distribuciones {% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <!-- Mensajes flash -->
+    {% for message in messages %}
+    {% if 'success' in message.tags %}
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% elif 'error' in message.tags %}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endif %}
+    {% endfor %}
+
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h2 class="h5 mb-0">
+                            <i class="bi bi-list-columns-reverse me-2"></i>Ejemplo de distribucion binomial
+                        </h2>
+                    </div>
+                </div>
+                <div class="card-body mt-0">
+                    <div class="bg-light p-3 rounded mb-3">
+                        <p class="text-muted">El gerente del sector control de calidad toma muestras que salen de una linea de ensamblaje y desea verificar sobre la base de datos la cantidad de chip con defectos observados en 200 dias. Ayude al gerente con todos los pasos necesarios para comprobar si es cierto que se puede ajustar bajo un modelo de distribucion binomial con n = 10 y p = 0.05</p>
+                    </div>
+                        <div class="table-responsive rounded">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light text-center">
+                                    <tr>
+                                        <th>Numero de unidades con defecto</th>
+                                        <th>0</th>
+                                        <th>1</th>
+                                        <th>2 o más</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="table-light text-center">
+                                    <tr>
+                                        <th>
+                                            <span> 
+                                                    Cantidades defectuosas
+                                            </span>
+                                        </th>
+                                        <td>
+                                            <span class="d-inline-block text-truncate">
+                                                    138
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="d-inline-block text-truncate">
+                                                53
+                                            </span>
+                                        </td>
+
+                                        <td>
+                                            <span class="d-inline-block text-truncate">
+                                                9
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+
+        <!-- Resultados del Ejemplo -->
+        <div class="col-xxl-12 col-lg-12">
+            <div class="card border-0 shadow-lg h-100">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h2 class="h5 mb-0">
+                            <i class="bi bi-list-columns-reverse me-2"></i>Resultados del ejemplo
+                        </h2>
+                    </div>
+                </div>
+            <div class="card-body">
+                <!-- Parámetros específicos -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h5 class="fw-bold">Probabilidad de éxito <code>(p)</code></h5>
+                        <div class="bg-light p-3 rounded">
+                            <p class="text-muted mb-0">0.05</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h5 class="fw-bold">Número de ensayos <code>(n)</code></h5>
+                        <div class="bg-light p-3 rounded">
+                            <p class="text-muted mb-0">10</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Estadísticos -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h5 class="fw-bold">Esperanza <code>E(x)</code></h5>
+                        <div class="bg-light p-3 rounded">
+                            <p class="text-muted mb-0">0.50</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h5 class="fw-bold">Varianza <code>V(x)</code></h5>
+                        <div class="bg-light p-3 rounded">
+                            <p class="text-muted mb-0">0.48</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Valores de x -->
+                <div class="mb-4">
+                    <h5 class="fw-bold">Marcas de clase</h5>
+                    <div class="bg-light p-3 rounded">
+                        <code>
+                        0, 1, 2 o más
+                        </code>
+                    </div>
+                </div>
+
+                <!-- Valores de probabilidad -->
+                <div class="mb-4">
+                    <h5 class="fw-bold">Probabilidades puntuales <code>f(x)</code></h5>
+                    <div class="bg-light p-3 rounded">
+                        <code>
+                        0,5987, 03151, 0,0862
+                        </code>
+                    </div>
+                </div>
+
+                <!-- Valores acumulados -->
+                <div class="mb-4">
+                    <h5 class="fw-bold">Probabilidades acumuladas <code>F(x)</code></h5>
+                    <div class="bg-light p-3 rounded">
+                        <code>
+                        0,5987, 0,9138, 1,0000
+                        </code>
+                    </div>
+                </div>
+
+                <!-- Gráfico de densidad / probabilidad (PDF) -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="fw-bold">Función de densidad / probabilidad <code>f(x)</code></h5>
+                        <p class="mb-2"><em>X</em> &sim; Bin(<strong>{{ distribucion.binomial.n }}</strong>, <strong>{{ distribucion.binomial.p }}</strong>)</p>
+                        <div id="grafico-pdf"></div>
+                    </div>
+                </div>
+
+                <!-- Gráfico de distribución acumulada (CDF) -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="fw-bold">Función de distribución acumulada <code>F(x)</code></h5>
+                        <p class="mb-2"><em>X</em> &sim; Bin(<strong>{{ distribucion.binomial.n }}</strong>, <strong>{{ distribucion.binomial.p }}</strong>)</p>
+                        <div id="grafico-cdf"></div>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.plot.ly/plotly-2.30.0.min.js"></script>
+<script>
+    const xs = [0, 1, 2];
+    const pdf = [0.5987, 0.3151, 0.0862];
+    const cdf = [0.5987, 0.9138, 1.0000];
+
+    const tipoPdf = 'bar';
+    const modoPdf = '';
+    const tituloY = 'P(X=x)';
+
+    Plotly.newPlot('grafico-pdf', [{
+        x: xs,
+        y: pdf,
+        type: tipoPdf,
+        mode: modoPdf
+    }], {
+        xaxis: { title: 'x' },
+        yaxis: { title: tituloY }
+    });
+
+    // Gráfico de F(x)
+    Plotly.newPlot('grafico-cdf', [{
+        x: xs,
+        y: cdf,
+        type: 'scatter',
+        mode: 'lines'
+    }], {
+        xaxis: { title: 'x' },
+        yaxis: { title: 'F(x)' }
+    });
+
+    window.addEventListener('resize', function () {
+        Plotly.Plots.resize('grafico-pdf');
+        Plotly.Plots.resize('grafico-cdf');
+    });
+</script>
+{% endblock %}

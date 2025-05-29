@@ -62,11 +62,11 @@
                     <div class="bg-light p-3 rounded">
                         <code>
                         {% if distribucion.tipo == 'EXP' %}
-                            {% for v in distribucion.valores_x %}
+                            {% for v in distribucion.valores_x_simulados %}
                                 {{ v|floatformat:1 }}{% if not forloop.last %}, {% endif %}
                             {% endfor %}
                         {% else %}
-                            {{ distribucion.valores_x|join:", " }}
+                            {{ distribucion.valores_x_simulados|join:", " }}
                         {% endif %}
                         </code>
                     </div>
@@ -77,7 +77,7 @@
                     <h5 class="fw-bold">Probabilidades puntuales <code>f(x)</code></h5>
                     <div class="bg-light p-3 rounded">
                         <code>
-                        {% for v in distribucion.valores_probabilidad %}
+                        {% for v in distribucion.valores_probabilidad_simulados %}
                             {{ v|floatformat:4 }}{% if not forloop.last %}, {% endif %}
                         {% endfor %}
                         </code>
@@ -89,7 +89,7 @@
                     <h5 class="fw-bold">Probabilidades acumuladas <code>F(x)</code></h5>
                     <div class="bg-light p-3 rounded">
                         <code>
-                        {% for v in distribucion.valores_acumulados %}
+                        {% for v in distribucion.valores_acumulados_simulados %}
                             {{ v|floatformat:4 }}{% if not forloop.last %}, {% endif %}
                         {% endfor %}
                         </code>
@@ -142,9 +142,15 @@
 
 <script src="https://cdn.plot.ly/plotly-2.30.0.min.js"></script>
 <script>
-    const xs = {{ distribucion.valores_x| safe }};
-    const pdf = {{ distribucion.valores_probabilidad| safe }};
-    const cdf = {{ distribucion.valores_acumulados| safe }};
+    // Distribución simulada
+    const xs_sim = {{ distribucion.valores_x_simulados|safe }};
+    const pdf_sim = {{ distribucion.valores_probabilidad_simulados|safe }};
+    const cdf_sim = {{ distribucion.valores_acumulados_simulados|safe }};
+
+    // Distribución teórica (común)
+    const xs_teo = {{ distribucion.valores_x|safe }};
+    const pdf_teo = {{ distribucion.valores_probabilidad|safe }};
+    const cdf_teo = {{ distribucion.valores_acumulados|safe }};
 
     // Configuración condicional para el gráfico de f(x)
     {% if distribucion.tipo == "BI" %}
@@ -157,25 +163,52 @@
     const tituloY = 'f(x)';
     {% endif %}
 
-    Plotly.newPlot('grafico-pdf', [{
-        x: xs,
-        y: pdf,
-        type: tipoPdf,
-        mode: modoPdf
-    }], {
+    // Gráfico de PDF
+    Plotly.newPlot('grafico-pdf', [
+        {
+            x: xs_teo,
+            y: pdf_teo,
+            name: 'Teórica',
+            type: tipoPdf,
+            mode: modoPdf,
+            marker: { color: 'rgba(0, 100, 255, 0.6)' }
+        },
+        {
+            x: xs_sim,
+            y: pdf_sim,
+            name: 'Simulada',
+            type: tipoPdf,
+            mode: modoPdf,
+            marker: { color: 'rgba(255, 100, 0, 0.6)' }
+        }
+    ], {
         xaxis: { title: 'x' },
-        yaxis: { title: tituloY }
+        yaxis: { title: tituloY },
+        title: 'Distribución de Probabilidad (PDF)'
     });
 
-    // Gráfico de F(x)
-    Plotly.newPlot('grafico-cdf', [{
-        x: xs,
-        y: cdf,
-        type: 'scatter',
-        mode: 'lines'
-    }], {
+    // Gráfico de CDF
+    Plotly.newPlot('grafico-cdf', [
+        {
+            x: xs_teo,
+            y: cdf_teo,
+            name: 'Teórica',
+            type: 'scatter',
+            mode: 'lines',
+            line: { color: 'rgba(0, 100, 255, 1)' }
+        },
+        {
+            x: xs_sim,
+            y: cdf_sim,
+            name: 'Simulada',
+            type: 'scatter',
+            mode: 'lines',
+            line: { color: 'rgba(255, 100, 0, 1)', dash: 'dot' }
+        }
+    ], {
         xaxis: { title: 'x' },
-        yaxis: { title: 'F(x)' }
+        yaxis: { title: tituloY },
+        title: 'Distribución Acumulada (CDF)'
     });
 
     window.addEventListener('resize', function () {
@@ -183,4 +216,5 @@
         Plotly.Plots.resize('grafico-cdf');
     });
 </script>
+
 {% endblock %}
