@@ -117,3 +117,4 @@ def simular_binomial(numeros_aleatorios, n, p):
         [round(p, 5) for p in valores_probabilidad_final],
         [round(a, 5) for a in valores_acumulados_final]
     )
+    return n * p * (1 - p)

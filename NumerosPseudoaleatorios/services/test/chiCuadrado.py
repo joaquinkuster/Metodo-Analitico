@@ -1,8 +1,6 @@
 from scipy.stats import chi2
-import numpy as np
-from .utilidades import unir_numeros_como_string, separar_en_bloques_de_n_cantidades
 
-def test_chi_cuadrado(significancia, numeros: list[int], cantidad_digitos):
+def test_chi_cuadrado(significancia: 0.05, numeros: list[int], cantidad_digitos):
     
     grupos = []
 

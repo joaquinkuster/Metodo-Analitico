@@ -5,6 +5,7 @@
 
 {% block body %}
 <div class="container-fluid py-4">
+
     <!-- Mensajes flash -->
     {% for message in messages %}
     {% if 'success' in message.tags %}
@@ -51,7 +52,6 @@
                         class="{% if tipo_generador is not None and tipo_generador != 'VN' %} form-inactivo {% endif %}">
                         {% csrf_token %}
                         <input type="hidden" name="tipo_generador" value="VN">
-
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label for="{{ von_neumann_form.semilla.id_for_label }}" class="form-label fw-bold">
@@ -65,12 +65,14 @@
                                 <label for="{{ von_neumann_form.cantidad.id_for_label }}" class="form-label fw-bold">
                                     {{ von_neumann_form.cantidad.label }}</label>
                                 {{ von_neumann_form.cantidad|add_class:"form-control" }}
+                                <div class="form-text text-muted">
+                                    Nota: Los n números se dividirán en dígitos
+                                </div>
                                 {% if von_neumann_form.cantidad.errors %}
                                 <div class="invalid-feedback d-block">{{ von_neumann_form.cantidad.errors.0 }}</div>
                                 {% endif %}
                             </div>
                         </div>
-
                         <div class="d-grid mt-4">
                             <button type="submit" class="btn btn-success">
                                 <i class="bi bi-play-circle me-2"></i>Generar
@@ -83,7 +85,6 @@
                         class="{% if tipo_generador is None or tipo_generador != 'CM' %} form-inactivo {% endif %}">
                         {% csrf_token %}
                         <input type="hidden" name="tipo_generador" value="CM">
-
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label for="{{ congruencial_form.semilla.id_for_label }}" class="form-label fw-bold">
@@ -97,6 +98,9 @@
                                 <label for="{{ congruencial_form.cantidad.id_for_label }}" class="form-label fw-bold">
                                     {{ congruencial_form.cantidad.label }}</label>
                                 {{ congruencial_form.cantidad|add_class:"form-control" }}
+                                <div class="form-text text-muted">
+                                    Nota: Los n números se dividirán en dígitos
+                                </div>
                                 {% if congruencial_form.cantidad.errors %}
                                 <div class="invalid-feedback d-block">{{ congruencial_form.cantidad.errors.0 }}</div>
                                 {% endif %}
@@ -128,7 +132,6 @@
                                 {% endif %}
                             </div>
                         </div>
-
                         <div class="d-grid mt-4">
                             <button type="submit" class="btn btn-success">
                                 <i class="bi bi-play-circle me-2"></i>Generar

@@ -1,8 +1,8 @@
 from math import gcd
 from django.db import models
 from django.core.exceptions import ValidationError
-from .generadores import generadores
-from .distribuciones import binomial, exponencial
+from .services.generator import von_neumann, congruencial_multiplicativo
+from .services.distribution import binomial, exponencial
 
 # Valores válidos para p
 VALORES_P_VALIDOS = [3, 11, 13, 19, 21, 27, 29, 37, 53, 59, 61, 67, 69, 77, 83, 91]
@@ -84,7 +84,10 @@ class SecuenciaBase(models.Model):
     cantidad = models.PositiveIntegerField(validators=[validar_cantidad])
     numeros = models.JSONField(validators=[validar_numeros], default=list)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
-
+    
+    class Meta:
+        ordering = ["-fecha_creacion"]
+    
     def __str__(self):
         return f"{self.numeros}"
 
@@ -112,7 +115,7 @@ class VonNeumann(SecuenciaBase):
         super().save(*args, **kwargs)
 
     def generar_numeros(self):
-        self.numeros = generadores.von_neumann(self.semilla, self.cantidad)
+        self.numeros = von_neumann.generar(self.semilla, self.cantidad)
         validar_numeros(self.numeros)
 
 
@@ -175,7 +178,7 @@ class CongruencialMultiplicativo(SecuenciaBase):
         super().save(*args, **kwargs)
 
     def generar_numeros(self):
-        self.numeros = generadores.congruencial_multiplicativo(
+        self.numeros = congruencial_multiplicativo.generar(
             self.semilla, self.multiplicador, self.modulo, self.cantidad
         )
         validar_numeros(self.numeros)
@@ -190,9 +193,7 @@ class TesterBase(models.Model):
     estadistico_prueba = models.FloatField()
     valor_critico = models.FloatField()
     aprobado = models.BooleanField()
-    frecuencias_observadas = models.JSONField(
-        validators=[validar_numeros], default=list
-    )
+    frecuencias_observadas = models.JSONField(validators=[validar_numeros], default=list)
     frecuencias_esperadas = models.JSONField(validators=[validar_numeros], default=list)
     secuencia = models.ForeignKey(SecuenciaBase, on_delete=models.CASCADE)
     pvalor = models.FloatField()
@@ -220,16 +221,11 @@ class TesterBase(models.Model):
 
 
 class ChiCuadrado(TesterBase):
-    cantidad_digitos = models.PositiveIntegerField(
-        default=1, validators=[validar_cantidad_digitos]
-    )
+    cantidad_digitos = models.PositiveIntegerField(default=1, validators=[validar_cantidad_digitos])
     intervalos = models.JSONField(default=list, validators=[validar_intervalos])
 
     def validar_campos(self):
         errores = {}
-
-        if self.cantidad_digitos not in [1, 2, 3]:
-            errores["cantidad_digitos"] = "La cantidad de dígitos debe ser 1, 2 o 3."
 
         if not (
             len(self.intervalos) == 10
@@ -284,6 +280,7 @@ class DistribucionBase(models.Model):
     def __str__(self):
         pares = zip(self.valores_x, self.valores_probabilidad)
         return ", ".join(f"({x}, {y})" for x, y in pares)
+    
 class Binomial(DistribucionBase):
     p = models.FloatField(
         validators=[validar_probabilidad_exito]

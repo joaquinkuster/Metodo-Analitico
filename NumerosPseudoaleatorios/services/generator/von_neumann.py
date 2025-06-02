@@ -1,12 +1,6 @@
-def congruencial_multiplicativo(semilla, a, m, n):
-    numeros = []
-    Xn = semilla
-    for _ in range(n):
-        Xn = (a * Xn) % m
-        numeros.append(Xn)
-    return numeros
+from .. import utils
 
-def von_neumann(semilla, cantidad, numeros=None):
+def generar(semilla, cantidad, numeros=None):
     if numeros is None:  
         numeros = []
 
@@ -21,6 +15,6 @@ def von_neumann(semilla, cantidad, numeros=None):
     numeros.append(int(nueva_semilla))
 
     if cantidad == 1:
-        return numeros
+        return utils.separar_digitos(numeros)
 
-    return von_neumann(int(nueva_semilla), cantidad - 1, numeros)
+    return generar(int(nueva_semilla), cantidad - 1, numeros)

@@ -50,4 +50,32 @@ $(document).ready(function () {
         btnToggle1.on('click', function () { toggleForms(true); });
         btnToggle2.on('click', function () { toggleForms(false); });
     }
+
+    // Función de agrupación 
+    function agruparNumeros(n, numeros) {
+        if (n < 1) return numeros.join(', ');
+
+        const grupos = [];
+        for (let i = 0; i < numeros.length; i += n) {
+            grupos.push(numeros.slice(i, i + n).join(''));
+        }
+        return grupos.join(', ');
+    }
+
+    const formAgruparDigitos = $('#formAgruparDigitos');
+    const inputAgruparDigitos = $('#inputAgruparDigitos');
+    const numerosGenerados = $('#numerosGenerados');
+
+    if (formAgruparDigitos.length &&
+        inputAgruparDigitos.length &&
+        numerosGenerados.length
+    ) {
+        formAgruparDigitos.on('submit', function (e) {
+            e.preventDefault();
+            const n = parseInt(inputAgruparDigitos.val()) || 1;
+            // Obtenemos los números directamente del elemento <code>
+            const numeros = numerosGenerados.data("numeros");
+            numerosGenerados.text(agruparNumeros(n, numeros));
+        });
+    }
 })
