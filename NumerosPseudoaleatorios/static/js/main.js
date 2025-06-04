@@ -51,7 +51,20 @@ $(document).ready(function () {
         btnToggle2.on('click', function () { toggleForms(false); });
     }
 
-    // Función de agrupación 
+    // Función para separar dígitos individualmente
+    function separarDigitos(numeros) {
+        const digitos = [];
+        for (let i = 0; i < numeros.length; i++) {
+            const strNum = String(numeros[i]);
+            for (let j = 0; j < strNum.length; j++) {
+                // Convierte cada carácter a entero
+                digitos.push(parseInt(strNum[j], 10));
+            }
+        }
+        return digitos;
+    }
+
+    // Función de agrupación en base a una cantidad n
     function agruparNumeros(n, numeros) {
         if (n < 1) return numeros.join(', ');
 
@@ -62,20 +75,31 @@ $(document).ready(function () {
         return grupos.join(', ');
     }
 
-    const formAgruparDigitos = $('#formAgruparDigitos');
     const inputAgruparDigitos = $('#inputAgruparDigitos');
     const numerosGenerados = $('#numerosGenerados');
 
-    if (formAgruparDigitos.length &&
-        inputAgruparDigitos.length &&
+    if (inputAgruparDigitos.length &&
         numerosGenerados.length
     ) {
-        formAgruparDigitos.on('submit', function (e) {
-            e.preventDefault();
+        function procesarAgrupacion() {
+            // Validación nativa HTML5
+            if (!inputAgruparDigitos[0].checkValidity()) {
+                inputAgruparDigitos[0].reportValidity(); // Muestra mensaje nativo del navegador
+                return;
+            }
+
             const n = parseInt(inputAgruparDigitos.val()) || 1;
             // Obtenemos los números directamente del elemento <code>
-            const numeros = numerosGenerados.data("numeros");
+            let numeros = numerosGenerados.data("numeros");
+            numeros = separarDigitos(numeros); // Primero, separamos todos los dígitos
             numerosGenerados.text(agruparNumeros(n, numeros));
+        }
+
+        procesarAgrupacion(); // Procesar la agrupación al inicio
+
+        inputAgruparDigitos.on('input change', function (e) {
+            e.preventDefault();
+            procesarAgrupacion();
         });
     }
 })

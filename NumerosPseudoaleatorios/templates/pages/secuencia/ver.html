@@ -3,110 +3,159 @@
 {% block title %} Detalle de Secuencia {% endblock %}
 
 {% block body %}
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card border-0 shadow-lg my-5">
-            <div class="card-header bg-primary text-white">
-                <h2 class="h5 mb-0">
-                    <i class="bi bi-eye me-2"></i>Detalle de Secuencia
-                    <span class="badge bg-light text-dark float-end">
-                        {{ secuencia.get_tipo_display }}
-                    </span>
-                </h2>
-            </div>
-            <div class="card-body">
-                <!-- Datos Comunes -->
-                <div class="row mb-4">
-                    <div class="col-md-6">
-                        <h5 class="fw-bold">Semilla</h5>
-                        <div class="bg-light p-3 rounded">
-                            <p class="text-muted mb-0">{{ secuencia.semilla }}</p>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <h5 class="fw-bold">Cantidad</h5>
-                        <div class="bg-light p-3 rounded">
-                            <p class="text-muted mb-0">{{ secuencia.cantidad }}</p>
-                        </div>
-                    </div>
-                </div>
+<div class="container-fluid py-4">
 
-                <!-- Parámetros Específicos -->
-                {% if secuencia.tipo == 'CM' %}
-                <div class="row mb-4">
-                    <div class="col-md-4">
-                        <h5 class="fw-bold">Valor t</h5>
-                        <div class="bg-light p-3 rounded">
-                            <p class="text-muted mb-0">{{ secuencia.t }}</p>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <h5 class="fw-bold">Valor p</h5>
-                        <div class="bg-light p-3 rounded">
-                            <p class="text-muted mb-0">{{ secuencia.p }}</p>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <h5 class="fw-bold">Módulo</h5>
-                        <div class="bg-light p-3 rounded">
-                            <p class="text-muted mb-0">{{ secuencia.modulo }}</p>
-                        </div>
-                    </div>
-                </div>
+    <!-- Mensajes flash -->
+    {% for message in messages %}
+    {% if 'success' in message.tags %}
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% elif 'error' in message.tags %}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endif %}
+    {% endfor %}
 
-                <div class="row mb-4">
-                    <div class="col-md-12 mt-2">
-                        <h5 class="fw-bold">Multiplicador (a)</h5>
-                        <div class="bg-light p-3 rounded">
-                            <p class="text-muted mb-0">{{ secuencia.multiplicador }}</p>
+    <div class="row g-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="h5 mb-0">
+                        <i class="bi bi-eye me-2"></i>Detalle de Secuencia
+                        <span class="badge bg-light text-dark float-end">
+                            {{ secuencia.get_tipo_display }}
+                        </span>
+                    </h2>
+                </div>
+                <div class="card-body">
+
+                    <!-- Datos iniciales (comúnes) -->
+                    <div class="col-12 d-flex align-items-center my-3">
+                        <span class="h6 me-2 text-muted">Datos iniciales</span>
+                        <hr class="flex-grow-1 my-0 border-1">
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <h5 class="fw-bold">Semilla</h5>
+                            <div class="bg-light p-3 rounded">
+                                <p class="text-muted mb-0">{{ secuencia.semilla }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <h5 class="fw-bold">Cantidad inicial (n)</h5>
+                            <div class="bg-light p-3 rounded">
+                                <p class="text-muted mb-0">{{ secuencia.cantidad }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <h5 class="fw-bold">Cantidad total</h5>
+                            <div class="bg-light p-3 rounded">
+                                <p class="text-muted mb-0">{{ total_digitos }}</p>
+                            </div>
                         </div>
                     </div>
-                </div>
-                {% endif %}
 
-                <!-- Filtro de Agrupación -->
-                <div class="row mb-4">
-                    <form id="formAgruparDigitos">
-                        <h5 class="fw-bold">Agrupar dígitos</h5>
+                    <!-- Parámetros específicos -->
+                    {% if secuencia.tipo == 'CM' %}
+
+                    <!-- Separador -->
+                    <div class="col-12 d-flex align-items-center my-3">
+                        <span class="h6 me-2 text-muted">Parámetros específicos</span>
+                        <hr class="flex-grow-1 my-0 border-1">
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <h5 class="fw-bold">Parámetro t</h5>
+                            <div class="bg-light p-3 rounded">
+                                <p class="text-muted mb-0">{{ secuencia.congruencialmultiplicativo.t }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <h5 class="fw-bold">Parámetro p</h5>
+                            <div class="bg-light p-3 rounded">
+                                <p class="text-muted mb-0">{{ secuencia.congruencialmultiplicativo.p }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <h5 class="fw-bold">Módulo (m)</h5>
+                            <div class="bg-light p-3 rounded">
+                                <p class="text-muted mb-0">{{ secuencia.congruencialmultiplicativo.modulo }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-12 mt-2">
+                            <h5 class="fw-bold">Multiplicador (a)</h5>
+                            <div class="bg-light p-3 rounded">
+                                <p class="text-muted mb-0">{{ secuencia.congruencialmultiplicativo.multiplicador }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+
+                    <!-- Números Generados -->
+                    <div class="col-12 d-flex align-items-center my-3">
+                        <span class="h6 me-2 text-muted">Números generados</span>
+                        <hr class="flex-grow-1 my-0 border-1">
+                    </div>
+
+                    <!-- Filtro de Agrupación -->
+                    <div class="row mb-4">
+                        <form method="post" action="{% url 'secuencia:modificar' id=secuencia.id %}">
+                            {% csrf_token %}
+                            <h5 class="fw-bold">Agrupar dígitos</h5>
+                            <div class="col-md-12">
+                                <div class="input-group">
+                                    <input type="number" name="cantidad_digitos" id="inputAgruparDigitos" min="1"
+                                        max="{{ total_digitos }}" class="form-control"
+                                        value="{{ secuencia.cantidad_digitos }}" placeholder="Cantidad de dígitos" />
+                                    <button type="submit" class="btn btn-primary">Aplicar</button>
+                                </div>
+                                <div class="form-text text-muted">
+                                    Ingresa un número entero positivo entre 1 y {{ total_digitos }} (máximo)
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="row mb-4">
+                        <h5 class="fw-bold">Números generados</h5>
+                        <div class="bg-light p-3 rounded">
+                            <code id="numerosGenerados"
+                                data-numeros="{{ secuencia.numeros }}">{{ secuencia.numeros|join:", " }}</code>
+
+                        </div>
+                    </div>
+
+                    <!-- Información adicional -->
+                    <div class="col-12 d-flex align-items-center my-3">
+                        <span class="h6 me-2 text-muted">Información adicional</span>
+                        <hr class="flex-grow-1 my-0 border-1">
+                    </div>
+
+                    <div class="row">
                         <div class="col-md-12">
-                            <div class="input-group">
-                                <input type="number" name="agrupar" id="inputAgruparDigitos" min="1"
-                                    max="{{ secuencia.numeros|length }}" class="form-control"
-                                    placeholder="Cantidad de dígitos" />
-                                <button type="submit" class="btn btn-primary">Aplicar</button>
-                            </div>
-                            <div class="form-text text-muted">
-                                Ingresa un número entero positivo entre 1 y {{ secuencia.numeros|length }} (máximo)
+                            <h5 class="fw-bold">Fecha de creación</h5>
+                            <div class="bg-light p-3 rounded">
+                                <p class="text-muted mb-0">{{ secuencia.fecha_creacion|date:'d/m/Y H:i' }}</p>
                             </div>
                         </div>
-                    </form>
-                </div>
-
-                <!-- Números Generados -->
-                <div class="mb-4">
-                    <h5 class="fw-bold">Números Generados</h5>
-                    <div class="bg-light p-3 rounded">
-                        <code id="numerosGenerados"
-                            data-numeros="{{ secuencia.numeros }}">{{ secuencia.numeros|join:", " }}</code>
-
                     </div>
-                </div>
 
-                <!-- Información Adicional -->
-                <div class="row">
-                    <div class="col-md-12">
-                        <h5 class="fw-bold">Fecha de Creación</h5>
-                        <div class="bg-light p-3 rounded">
-                            <p class="text-muted mb-0">{{ secuencia.fecha_creacion|date:'d/m/Y H:i' }}</p>
-                        </div>
+                    <!-- Botón de Volver -->
+                    <div class="d-grid gap-2 mt-4">
+                        <a href="{% url 'secuencia:generar' %}" class="btn btn-primary">
+                            <i class="bi bi-arrow-left me-2"></i>Volver a la lista
+                        </a>
                     </div>
-                </div>
-
-                <!-- Botón de Volver -->
-                <div class="d-grid gap-2 mt-4">
-                    <a href="{% url 'secuencia:generar' %}" class="btn btn-primary">
-                        <i class="bi bi-arrow-left me-2"></i>Volver a la lista
-                    </a>
                 </div>
             </div>
         </div>

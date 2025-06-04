@@ -13,7 +13,7 @@ from .models import (
 class VonNeumannForm(forms.ModelForm):
     class Meta:
         model = VonNeumann
-        fields = ["semilla", "cantidad"]
+        fields = ["semilla", "cantidad", "cantidad_digitos"]
         widgets = {
             "semilla": forms.NumberInput(
                 attrs={
@@ -31,17 +31,25 @@ class VonNeumannForm(forms.ModelForm):
                     "required": True,
                 }
             ),
+            "cantidad_digitos": forms.NumberInput(
+                attrs={
+                    "min": 1,
+                    "placeholder": "Cantidad de dígitos",
+                    "required": True,
+                }
+            ),
         }
         labels = {
             "semilla": "Semilla (4 dígitos)",
-            "cantidad": "Cantidad (n)",
+            "cantidad": "Cantidad inicial (n)",
+            "cantidad_digitos": "Cantidad de dígitos (m)",
         }
 
 
 class CongruencialMultiplicativoForm(forms.ModelForm):
     class Meta:
         model = CongruencialMultiplicativo
-        fields = ["semilla", "cantidad", "t", "p", "modulo"]
+        fields = ["semilla", "cantidad", "cantidad_digitos", "t", "p", "modulo"]
         widgets = {
             "semilla": forms.NumberInput(
                 attrs={"min": 1, "placeholder": "Semilla inicial", "required": True}
@@ -51,6 +59,13 @@ class CongruencialMultiplicativoForm(forms.ModelForm):
                     "min": 1,
                     "max": 100,
                     "placeholder": "Cantidad de números",
+                    "required": True,
+                }
+            ),
+            "cantidad_digitos": forms.NumberInput(
+                attrs={
+                    "min": 1,
+                    "placeholder": "Cantidad de dígitos",
                     "required": True,
                 }
             ),
@@ -66,8 +81,9 @@ class CongruencialMultiplicativoForm(forms.ModelForm):
             ),
         }
         labels = {
-            "semilla": "Semilla inicial",
-            "cantidad": "Cantidad (n)",
+            "semilla": "Semilla",
+            "cantidad": "Cantidad inicial (n)",
+            "cantidad_digitos": "Cantidad de dígitos (m)",
             "t": "Parámetro t",
             "p": "Parámetro p",
             "modulo": "Módulo (m)",

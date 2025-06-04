@@ -6,4 +6,4 @@ def generar(semilla, a, m, n):
     for _ in range(n):
         Xn = (a * Xn) % m
         numeros.append(Xn)
-    return utils.separar_digitos(numeros)
+    return numeros

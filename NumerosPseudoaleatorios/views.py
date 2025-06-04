@@ -10,7 +10,7 @@ from .models import (
     SecuenciaBase,
     TesterBase,
     TipoDistribucion,
-    DistribucionBase
+    DistribucionBase,
 )
 from .forms import (
     VonNeumannForm,
@@ -24,6 +24,7 @@ from django.views.decorators.http import require_POST
 from .services.test.poquer import test_poker
 from .services.test.chiCuadrado import test_chi_cuadrado
 
+
 def index(request):
     return render(request, "index.html")
 
@@ -35,7 +36,7 @@ def generar_secuencia(request):
     # Inicializar ambos formularios
     von_neumann_form = VonNeumannForm()
     congruencial_form = CongruencialMultiplicativoForm()
-    tipo = request.POST.get("tipo_generador") or None
+    tipo = request.POST.get("tipo_generador") or "VN"
     form = None
 
     # Procesar POST
@@ -73,15 +74,9 @@ def generar_secuencia(request):
         },
     )
 
-
 @require_POST
-def eliminar_secuencia(request, id, tipo):
-    secuencia = None
-
-    if tipo == TipoGenerador.VON_NEUMANN:
-        secuencia = VonNeumann.objects.get(id=id)
-    elif tipo == TipoGenerador.CONGRUENCIAL_MULTIPLICATIVO:
-        secuencia = CongruencialMultiplicativo.objects.get(id=id)
+def eliminar_secuencia(request, id):
+    secuencia = SecuenciaBase.objects.get(id=id)
 
     if secuencia is None:
         messages.error(request, "No se encontró la secuencia a eliminar.")
@@ -92,25 +87,45 @@ def eliminar_secuencia(request, id, tipo):
     return redirect("secuencia:generar")
 
 
-def ver_secuencia(request, id, tipo):
-    secuencia = None
-
-    if tipo == TipoGenerador.VON_NEUMANN:
-        secuencia = VonNeumann.objects.get(id=id)
-    elif tipo == TipoGenerador.CONGRUENCIAL_MULTIPLICATIVO:
-        secuencia = CongruencialMultiplicativo.objects.get(id=id)
+def ver_secuencia(request, id):
+    secuencia = SecuenciaBase.objects.get(id=id)
 
     if secuencia is None:
         messages.error(request, "No se encontró la secuencia para visualizar.")
         return redirect("secuencia:generar")
+    
+    total_digitos = len(secuencia.numeros) * secuencia.cantidad_digitos
 
     return render(
         request,
         "pages/secuencia/ver.html",
         {
+            "total_digitos": total_digitos,
             "secuencia": secuencia,
         },
     )
+    
+@require_POST
+def modificar_secuencia(request, id):
+    try:
+        secuencia = SecuenciaBase.objects.get(id=id)
+        if secuencia is None:
+            messages.error(request, "No se encontró la secuencia a modificar.")
+            return redirect("secuencia:generar")
+        
+        cantidad_digitos = request.POST.get('cantidad_digitos')
+        if not cantidad_digitos:  
+            messages.error(request, "La cantidad de dígitos es obligatoria.")
+            return redirect("secuencia:ver", id)
+
+        secuencia.cantidad_digitos = int(cantidad_digitos)
+        secuencia.save()
+        messages.success(request, "Cantidad de dígitos actualizada exitosamente.")
+        
+    except Exception as e:
+        messages.error(request, f"Error al modificar la secuencia: {str(e)}")
+    
+    return redirect("secuencia:ver", id)
 
 
 # Funciones para gestionar los tests
@@ -282,6 +297,7 @@ def testear_secuencia(request, id, tipo):
         },
     )
 
+
 def generar_distribucion(request):
     # Inicializar ambos formularios
     binomial_form = BinomialForm()
@@ -312,7 +328,7 @@ def generar_distribucion(request):
 
     # Obtener todas las distribuciones usando DistribucionBase
     distribuciones = list(DistribucionBase.objects.all())
-    
+
     return render(
         request,
         "pages/distribucion/generar.html",
@@ -324,6 +340,7 @@ def generar_distribucion(request):
         },
     )
 
+
 def ver_distribucion(request, id):
     # Obtenemos la distribución o devolvemos 404
     distribucion = DistribucionBase.objects.get(id=id)
@@ -333,9 +350,14 @@ def ver_distribucion(request, id):
         return redirect("distribucion:generar")
 
     # Renderizamos la plantilla de detalle
-    return render(request, "pages/distribucion/ver.html", {
-        "distribucion": distribucion,
-    })
+    return render(
+        request,
+        "pages/distribucion/ver.html",
+        {
+            "distribucion": distribucion,
+        },
+    )
+
 
 def menu_ejemplos(request):
     # Renderizamos la plantilla de detalle
@@ -345,15 +367,19 @@ def menu_ejemplos(request):
 def ejemplos_distribucion(request, distribucion):
     binomial_form = BinomialForm()
     exponencial_form = ExponencialForm()
-    
+
     if distribucion is None:
         messages.error(request, "No se encontró la distribución para visualizar.")
         return redirect("distribucion:generar")
     if distribucion == "binomial":
-        return render(request, "pages/distribucion/ejemplos/binomial.html", {
-            "binomial_form": binomial_form
-        })
+        return render(
+            request,
+            "pages/distribucion/ejemplos/binomial.html",
+            {"binomial_form": binomial_form},
+        )
     elif distribucion == "exponencial":
-        return render(request, "pages/distribucion/ejemplos/exponencial.html", {
-            "exponencial_form": exponencial_form
-        })
+        return render(
+            request,
+            "pages/distribucion/ejemplos/exponencial.html",
+            {"exponencial_form": exponencial_form},
+        )

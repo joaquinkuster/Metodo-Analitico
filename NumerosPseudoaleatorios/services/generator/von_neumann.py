@@ -15,6 +15,6 @@ def generar(semilla, cantidad, numeros=None):
     numeros.append(int(nueva_semilla))
 
     if cantidad == 1:
-        return utils.separar_digitos(numeros)
+        return numeros
 
     return generar(int(nueva_semilla), cantidad - 1, numeros)

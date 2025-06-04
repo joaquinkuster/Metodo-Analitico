@@ -3,6 +3,7 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from .services.generator import von_neumann, congruencial_multiplicativo
 from .services.distribution import binomial, exponencial
+from .services import utils
 
 # Valores válidos para p
 VALORES_P_VALIDOS = [3, 11, 13, 19, 21, 27, 29, 37, 53, 59, 61, 67, 69, 77, 83, 91]
@@ -34,20 +35,18 @@ def validar_numeros(numeros):
 
 # Validador para la cantidad
 def validar_cantidad(cantidad):
-    if not (1 <= cantidad <= 100):
+    if not (1 <= cantidad <= 1000):
         raise ValidationError("La cantidad debe ser mayor a 0 y menor o igual a 100.")
-
+    
+# Validador para la cantidad de dígitos
+def validar_cantidad_digitos(cantidad_digitos):
+    if (cantidad_digitos < 1):
+        raise ValidationError("La cantidad de dígitos debe ser mayor a 0.")
 
 # Validar significancia
 def validar_significancia(significancia):
     if not (0 < significancia < 1):
         raise ValidationError("La significancia debe ser un número entre 0 y 1.")
-
-
-# Validadores para ChiCuadrado
-def validar_cantidad_digitos(valor):
-    if valor not in [1, 2, 3]:
-        raise ValidationError("La cantidad de dígitos debe ser 1, 2 o 3.")
 
 
 def validar_intervalos(intervalos):
@@ -82,6 +81,7 @@ class SecuenciaBase(models.Model):
     )
     semilla = models.PositiveIntegerField()
     cantidad = models.PositiveIntegerField(validators=[validar_cantidad])
+    cantidad_digitos = models.PositiveBigIntegerField(validators=[validar_cantidad_digitos])
     numeros = models.JSONField(validators=[validar_numeros], default=list)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     
@@ -90,9 +90,45 @@ class SecuenciaBase(models.Model):
     
     def __str__(self):
         return f"{self.numeros}"
+    
+    def save(self, *args, **kwargs):
+    
+        # Si es un nuevo registro 
+        if self._state.adding:
+            self.set_tipo()
+            self.validar_campos()
+            self.generar_numeros() 
+
+        self.numeros = utils.separar_digitos(self.numeros)
+        self.validar_cantidad_digitos()
+        self.numeros = utils.agrupar_por_digitos(self.numeros, self.cantidad_digitos)
+            
+        super().save(*args, **kwargs)
+        
+    # Validar que cantidad de digitos es mayor o igual len(numeros)
+    def validar_cantidad_digitos(self):
+        longitud = len(self.numeros or [])
+        if (self.cantidad_digitos < 1) or (self.cantidad_digitos > longitud):
+            raise ValidationError({
+                "cantidad_digitos": (
+                    f"La cantidad de dígitos debe ser mayor a 0, y no puede ser mayor que la cantidad de números ({longitud})."
+                )
+            })
+            
+    def set_tipo(self):
+        raise NotImplementedError("Implementar set_tipo() en la subclase.")
+    
+    def validar_campos(self):
+        raise NotImplementedError("Implementar validar_campos() en la subclase.")
+
+    def generar_numeros(self):
+        raise NotImplementedError("Implementar generar_numeros() en la subclase.")
 
 
 class VonNeumann(SecuenciaBase):
+    def set_tipo(self):
+        self.tipo = TipoGenerador.VON_NEUMANN
+        
     def validar_campos(self):
         errores = {}
 
@@ -108,12 +144,6 @@ class VonNeumann(SecuenciaBase):
         if errores:
             raise ValidationError(errores)
 
-    def save(self, *args, **kwargs):
-        self.tipo = TipoGenerador.VON_NEUMANN
-        self.validar_campos()
-        self.generar_numeros()
-        super().save(*args, **kwargs)
-
     def generar_numeros(self):
         self.numeros = von_neumann.generar(self.semilla, self.cantidad)
         validar_numeros(self.numeros)
@@ -124,6 +154,9 @@ class CongruencialMultiplicativo(SecuenciaBase):
     p = models.PositiveIntegerField()
     modulo = models.PositiveIntegerField()
     multiplicador = models.BigIntegerField(editable=False)
+    
+    def set_tipo(self):
+        self.tipo = TipoGenerador.CONGRUENCIAL_MULTIPLICATIVO
 
     def validar_campos(self):
         errores = {}
@@ -170,12 +203,6 @@ class CongruencialMultiplicativo(SecuenciaBase):
 
         if errores:
             raise ValidationError(errores)
-
-    def save(self, *args, **kwargs):
-        self.tipo = TipoGenerador.CONGRUENCIAL_MULTIPLICATIVO
-        self.validar_campos()
-        self.generar_numeros()
-        super().save(*args, **kwargs)
 
     def generar_numeros(self):
         self.numeros = congruencial_multiplicativo.generar(

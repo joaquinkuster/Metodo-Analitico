@@ -3,9 +3,10 @@ from . import views
 
 secuencia_patterns = [
     path('generar/', views.generar_secuencia, name='generar'),
-    path('ver/<int:id>/<str:tipo>/', views.ver_secuencia, name='ver'),
-    path('eliminar/<int:id>/<str:tipo>/', views.eliminar_secuencia, name='eliminar'),
-    path('testear/<int:id>/<str:tipo>/', views.testear_secuencia, name='testear'), 
+    path('ver/<int:id>/', views.ver_secuencia, name='ver'),
+    path('eliminar/<int:id>/', views.eliminar_secuencia, name='eliminar'),
+    path('modificar/<int:id>/', views.modificar_secuencia, name='modificar'),
+    path('testear/<int:id>/', views.testear_secuencia, name='testear'), 
 ]
 
 test_patterns = [
