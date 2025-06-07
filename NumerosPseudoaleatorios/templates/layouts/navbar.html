@@ -23,8 +23,8 @@
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
                         <li>
-                            <a class="dropdown-item d-flex align-items-center {% if request.path == 'secuencia/generar' %}active bg-primary{% endif %}"
-                                href="{% url 'secuencia:generar' %}">
+                            <a class="dropdown-item d-flex align-items-center {% if request.path == 'generador/' %}active bg-primary{% endif %}"
+                                href="{% url 'generador:index' %}">
                                 <i class="bi bi-123 me-2"></i> Generar números
                             </a>
                         </li>

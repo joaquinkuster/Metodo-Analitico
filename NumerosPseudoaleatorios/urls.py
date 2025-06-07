@@ -1,8 +1,8 @@
 from django.urls import path, include
 from . import views
 
-secuencia_patterns = [
-    path('generar/', views.generar_secuencia, name='generar'),
+generador_patterns = [
+    path('', views.generar_secuencia, name='index'),
     path('ver/<int:id>/', views.ver_secuencia, name='ver'),
     path('eliminar/<int:id>/', views.eliminar_secuencia, name='eliminar'),
     path('modificar/<int:id>/', views.modificar_secuencia, name='modificar'),
@@ -10,9 +10,9 @@ secuencia_patterns = [
 ]
 
 test_patterns = [
-    path('generar/', views.generar_test, name='generar'),
-    path('ver/<int:id>/<str:tipo>/', views.ver_test, name='ver'),
-    path('eliminar/<int:id>/<str:tipo>/', views.eliminar_test, name='eliminar')
+    path('', views.generar_test, name='generar'),
+    path('ver/<int:id>/', views.ver_test, name='ver'),
+    path('eliminar/<int:id>/', views.eliminar_test, name='eliminar')
 ]
 
 distribucion_ejemplos_patterns = [
@@ -21,7 +21,7 @@ distribucion_ejemplos_patterns = [
 ]
 
 distribucion_patterns = [
-    path('generar/', views.generar_distribucion, name='generar'),
+    path('', views.generar_distribucion, name='generar'),
     path('ver/<int:id>/', views.ver_distribucion, name='ver'),
     path('eliminar/<int:id>/<str:tipo>/', views.eliminar_test, name='eliminar'),
     path('ejemplos/', include((distribucion_ejemplos_patterns, 'NumerosPseudoaleatorios'), namespace='ejemplos')),
@@ -29,7 +29,7 @@ distribucion_patterns = [
 
 urlpatterns = [
     path('', views.index, name='index'),
-    path('secuencia/', include((secuencia_patterns, 'NumerosPseudoaleatorios'), namespace='secuencia')),
+    path('generador/', include((generador_patterns, 'NumerosPseudoaleatorios'), namespace='generador')),
     path('test/', include((test_patterns, 'NumerosPseudoaleatorios'), namespace="test")),
     path('distribucion/', include((distribucion_patterns, 'NumerosPseudoaleatorios'), namespace="distribucion")),
 ]

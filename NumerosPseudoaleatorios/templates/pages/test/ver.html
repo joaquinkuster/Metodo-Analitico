@@ -1,123 +1,296 @@
-{% extends "layouts/base.html" %} {% block title %} Detalle de Test {%endblock%}
+{% extends "layouts/base.html" %}
+
+{% block title %} Resultado Test Chi-Cuadrado {% endblock %}
+
 {% block body %}
-<div class="row justify-content-center">
-  <div class="col-md-8">
-    <div class="card border-0 shadow-lg my-5">
-      <div class="card-header bg-primary text-white">
-        <h2 class="h5 mb-0">
-          <i class="bi bi-eye me-2"></i>Detalle de Test
-          <span class="badge bg-light text-dark float-end">
-            {{ test.get_tipo_display }}
-          </span>
-        </h2>
-      </div>
-      <div class="card-body">
-        <!-- Datos Comunes -->
-        <div class="row mb-4">
-          <div class="col-md-4">
-            <h5 class="fw-bold">Aprobado</h5>
-            <div class="bg-light p-3 rounded">
-              <p class="text-muted mb-0">
-                {% if test.aprobado %}
-                <span class="badge bg-success">Sí</span>
-                {% else %}
-                <span class="badge bg-danger">No</span>
-                {% endif %}
-              </p>
-            </div>
-          </div>
-          <div class="col-md-4">
-            <h5 class="fw-bold">P-valor</h5>
-            <div class="bg-light p-3 rounded">
-              <p class="text-muted mb-0">{{ test.pvalor }}</p>
-            </div>
-          </div>
-          <div class="col-md-4">
-            <h5 class="fw-bold">Significancia</h5>
-            <div class="bg-light p-3 rounded">
-              <p class="text-muted mb-0">{{ test.significancia }}</p>
-            </div>
-          </div>
-          <div class="col-md-6 mt-4">
-            <h5 class="fw-bold">Estadistico de prueba</h5>
-            <div class="bg-light p-3 rounded">
-              <p class="text-muted mb-0">{{ test.estadistico_prueba }}</p>
-            </div>
-          </div>
-          <div class="col-md-6 mt-4">
-            <h5 class="fw-bold">Valor critico</h5>
-            <div class="bg-light p-3 rounded">
-              <p class="text-muted mb-0">{{ test.valor_critico }}</p>
-            </div>
-          </div>
-          {% comment %} Armamos una tabla con los valores del test {% endcomment %}
-          <div class="table-responsive rounded mt-4">
-            <table class="table table-hover align-middle mb-0 p-3">
-                <thead class="table-light text-center">
-                    <tr>
-                        {% comment %} para este titulo si es PK tiene que mostrar categorias si es cc tiene que mostrar intervalos {% endcomment %}
-                        <th class="fw-bold">Categoría</th>
-                        <th>FO</th>
-                        <th>FE</th>
-                        <th>Diferencia</th>
-                        <th>Diferencia²</th>
-                        <th>Diferencia² / FE</th>
-                    </tr>
-                </thead>
-                <tbody class="text-center">
-                    {% for frecuencia in frecuencias %}
-                    <tr>
-                      <td>{{ frecuencia.cat }}</td>
-                      <td class="fw-bold">{{ frecuencia.fo }}</td>
-                      <td class="fw-bold">{{ frecuencia.fe }}</td>
-                      <td class="fw-bold">{{ frecuencia.diferencia|floatformat:5 }}</td>
-                      <td class="fw-bold">{{ frecuencia.cuadrado_diferencia|floatformat:5 }}</td>
-                      <td class="fw-bold">{{ frecuencia.cuadrado_diferencia_fe|floatformat:5 }}</td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                      <td colspan="8" class="text-center py-4">
-                          <div class="text-muted">
-                              <i class="bi bi-info-circle fs-4"></i>
-                              <p class="mt-2 mb-0">No hay tests registrados</p>
-                          </div>
-                      </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+<div class="container-fluid py-4">
 
-          <!-- Información de la Secuencia -->
-          <!-- Números Generados -->
-          <div class="mb-4 mt-4">
-            <h5 class="fw-bold">Números Generados</h5>
-            <div class="bg-light p-3 rounded">
-              <code>{{ test.secuencia }}</code>
-            </div>
-          </div>
-
-          <!-- Información Adicional -->
-          <div class="row">
-            <div class="col-md-6">
-              <h5 class="fw-bold">Fecha de Creación</h5>
-              <div class="bg-light p-3 rounded">
-                <p class="text-muted mb-0">
-                  {{ test.fecha_creacion|date:'d/m/Y H:i' }}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Botón de Volver -->
-          <div class="d-grid gap-2 mt-4">
-            <a href="{% url 'test:generar' %}" class="btn btn-primary">
-              <i class="bi bi-arrow-left me-2"></i>Volver a la lista
-            </a>
-          </div>
-        </div>
-      </div>
+    <!-- Mensajes flash -->
+    {% for message in messages %}
+    {% if 'success' in message.tags %}
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
-  </div>
-  {% endblock %}
+    {% elif 'error' in message.tags %}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endif %}
+    {% endfor %}
+
+    <div class="row g-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="h5 mb-0">Detalle del Test
+                        <div class="float-end">
+                            <span class="badge bg-light text-dark me-2">
+                                {{ test.get_tipo_display }}
+                            </span>
+                            {% if test.aprobado %}
+                            <span class="badge bg-success text-white">
+                                <i class="bi bi-check-circle-fill me-1"></i> Aprobado
+                            </span>
+                            {% else %}
+                            <span class="badge bg-danger text-white">
+                                <i class="bi bi-x-circle-fill me-1"></i> No Aprobado
+                            </span>
+                            {% endif %}
+                        </div>
+                    </h2>
+                </div>
+
+                <div class="card-body">
+                    <!-- Resultados principales -->
+                    <div class="col-12 d-flex align-items-center my-3">
+                        <span class="h6 me-2 text-muted">Resultados del test</span>
+                        <hr class="flex-grow-1 my-0 border-1">
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <h5 class="fw-bold">Nivel de significancia (α)</h5>
+                            <div class="bg-light p-3 rounded">
+                                <p class="text-muted mb-0">{{ test.significancia|floatformat:2 }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <h5 class="fw-bold">Estadístico de prueba</h5>
+                            <div class="bg-light p-3 rounded">
+                                <p class="text-muted mb-0">{{ test.estadistico_prueba|floatformat:4 }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <h5 class="fw-bold">Valor crítico</h5>
+                            <div class="bg-light p-3 rounded">
+                                <p class="text-muted mb-0">{{ test.valor_critico|floatformat:4 }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5 class="fw-bold">P-valor</h5>
+                            <div class="bg-light p-3 rounded">
+                                <p class="text-muted mb-0">{{ test.pvalor|floatformat:4 }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h5 class="fw-bold">Grados de libertad</h5>
+                            <div class="bg-light p-3 rounded">
+                                <p class="text-muted mb-0">{{ test.grados_libertad }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Frecuencias -->
+                    <div class="col-12 d-flex align-items-center my-3">
+                        <span class="h6 me-2 text-muted">Distribución de frecuencias</span>
+                        <hr class="flex-grow-1 my-0 border-1">
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-hover text-center">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th scope="col">Categoría</th>
+                                            <th scope="col">Frecuencia observada (fo)</th>
+                                            <th scope="col">Frecuencia esperada (fe)</th>
+                                            <th scope="col">fo - fe</th>
+                                            <th scope="col">(fo - fe)<sup>2</sup></th>
+                                            <th scope="col">(fo - fe)<sup>2</sup> / fe</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for cat, fo, fe, dif, dif_cuad, dif_cuad_fe in categorias_con_frecuencias %}
+                                        <tr>
+                                            {% if test.tipo == 'CC' %}
+                                            <td>[{{ cat.0|floatformat:2 }} - {{ cat.1|floatformat:2 }})</td>
+                                            {% else %}
+                                            <td>{{ cat }}</td>
+                                            {% endif %}
+                                            <td>{{ fo }}</td>
+                                            <td>{{ fe|floatformat:2 }}</td>
+                                            <td>{{ dif|floatformat:2 }}</td>
+                                            <td>{{ dif_cuad|floatformat:2 }}</td>
+                                            <td>{{ dif_cuad_fe|floatformat:2 }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Gráfico (opcional) -->
+                    <div class="col-12 d-flex align-items-center my-3">
+                        <span class="h6 me-2 text-muted">Visualización</span>
+                        <hr class="flex-grow-1 my-0 border-1">
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="bg-light p-3 rounded">
+                                <div id="chi-square-plot" height="300"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Información de la secuencia -->
+                    <div class="col-12 d-flex align-items-center my-3">
+                        <span class="h6 me-2 text-muted">Secuencia analizada</span>
+                        <hr class="flex-grow-1 my-0 border-1">
+                    </div>
+
+                    <div class="row mb-4">
+                        <h5 class="fw-bold">Números generados</h5>
+                        <div class="bg-light p-3 rounded">
+                            <code>{{ test.secuencia.numeros|join:", " }}</code>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5 class="fw-bold">Tipo de generador</h5>
+                            <div class="bg-light p-3 rounded">
+                                <p class="text-muted mb-0">{{ test.secuencia.get_tipo_display }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h5 class="fw-bold">Cantidad total</h5>
+                            <div class="bg-light p-3 rounded">
+                                <p class="text-muted mb-0">{{ test.secuencia.numeros|length }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Información adicional -->
+                    <div class="col-12 d-flex align-items-center my-3">
+                        <span class="h6 me-2 text-muted">Información adicional</span>
+                        <hr class="flex-grow-1 my-0 border-1">
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h5 class="fw-bold">Fecha de creación</h5>
+                            <div class="bg-light p-3 rounded">
+                                <p class="text-muted mb-0">{{ test.fecha_creacion|date:'d/m/Y H:i' }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botones de Acción -->
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <a href="{% url 'generador:ver' test.secuencia.id %}" class="btn btn-secondary w-100">
+                                <i class="bi bi-arrow-left me-2"></i>Ver secuencia
+                            </a>
+                        </div>
+                        <div class="col-md-6">
+                            <a href="{% url 'test:generar' %}" class="btn btn-primary w-100">
+                                <i class="bi bi-list-ul me-2"></i>Volver a la lista
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<!-- Script para el gráfico -->
+<script src="https://cdn.plot.ly/plotly-2.30.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jstat@latest/dist/jstat.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Datos desde Django
+    const estadistico_prueba = {{ test.estadistico_prueba| safe }};
+    const valor_critico = {{ test.valor_critico| safe }};
+    const grados_libertad = {{ test.grados_libertad| safe }};
+    const aprobado = {{ test.aprobado| safe | lower }};
+    const significancia = {{ test.significancia| safe }};
+
+    // Generar puntos para la curva usando jStat
+    const xValues = [];
+    const yValues = [];
+    const maxX = Math.max(valor_critico, estadistico_prueba) * 1.5;
+
+    for (let x = 0; x <= maxX; x += maxX / 200) {
+        xValues.push(x);
+        // Usando jStat para la PDF exacta
+        yValues.push(jStat.chisquare.pdf(x, grados_libertad));
+    }
+
+    // Configuración del gráfico
+    const trace = {
+        x: xValues,
+        y: yValues,
+        mode: 'lines',
+        name: `Distribución χ² (gl=${grados_libertad})`,
+        line: { color: '#1f77b4', width: 2 }
+    };
+
+    // Marcadores para valores importantes
+    const valor_critico_y = jStat.chisquare.pdf(valor_critico, grados_libertad);
+    const estadistico_y = jStat.chisquare.pdf(estadistico_prueba, grados_libertad);
+
+    const markers = [{
+        x: [valor_critico],
+        y: [valor_critico_y],
+        mode: 'markers+text',
+        name: 'Valor crítico',
+        marker: { color: 'red', size: 12 },
+        text: [`${valor_critico.toFixed(2)} (crítico)`],
+        textposition: 'top right'
+    }, {
+        x: [estadistico_prueba],
+        y: [estadistico_y],
+        mode: 'markers+text',
+        name: 'Estadístico prueba',
+        marker: { color: aprobado ? 'green' : 'orange', size: 12 },
+        text: [`${estadistico_prueba.toFixed(2)} (prueba)`],
+        textposition: 'top left'
+    }];
+
+    // Área de rechazo
+    const rejectionX = xValues.filter(x => x >= valor_critico);
+    const rejectionY = rejectionX.map(x => jStat.chisquare.pdf(x, grados_libertad));
+
+    const rejectionArea = {
+        x: [valor_critico, ...rejectionX],
+        y: [0, ...rejectionY],
+        fill: 'tozeroy',
+        mode: 'none',
+        name: 'Zona de rechazo',
+        fillcolor: 'rgba(255, 0, 0, 0.2)'
+    };
+
+    // Crear el gráfico
+    Plotly.newPlot('chi-square-plot', [trace, rejectionArea, ...markers], {
+        title: `Distribución Chi-Cuadrado (${grados_libertad} gl)<br>Valor crítico: ${valor_critico.toFixed(2)} | Estadístico: ${estadistico_prueba.toFixed(2)}`,
+        xaxis: { title: 'Valor χ²', range: [0, maxX] },
+        yaxis: { title: 'Densidad de probabilidad' },
+        showlegend: true,
+        margin: { t: 80 },
+        annotations: [{
+            x: valor_critico,
+            y: valor_critico_y * 0.7,
+            text: `α = ${significancia.toFixed(3)}`,
+            showarrow: true,
+            arrowhead: 1,
+            ax: 0,
+            ay: -40
+        }]
+    });
+
+    // Ajustar al redimensionar
+    window.addEventListener('resize', function () {
+        Plotly.Plots.resize('chi-square-plot');
+    });
+});
+</script>
+{% endblock %}

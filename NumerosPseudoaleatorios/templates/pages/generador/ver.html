@@ -25,14 +25,14 @@
             <div class="card border-0 shadow-lg">
                 <div class="card-header bg-primary text-white">
                     <h2 class="h5 mb-0">
-                        <i class="bi bi-eye me-2"></i>Detalle de Secuencia
+                        Detalle de Secuencia
                         <span class="badge bg-light text-dark float-end">
                             {{ secuencia.get_tipo_display }}
                         </span>
                     </h2>
                 </div>
-                <div class="card-body">
 
+                <div class="card-body">
                     <!-- Datos iniciales (comúnes) -->
                     <div class="col-12 d-flex align-items-center my-3">
                         <span class="h6 me-2 text-muted">Datos iniciales</span>
@@ -49,13 +49,13 @@
                         <div class="col-md-4">
                             <h5 class="fw-bold">Cantidad inicial (n)</h5>
                             <div class="bg-light p-3 rounded">
-                                <p class="text-muted mb-0">{{ secuencia.cantidad }}</p>
+                                <p class="text-muted mb-0">{{ secuencia.cantidad_inicial }}</p>
                             </div>
                         </div>
                         <div class="col-md-4">
                             <h5 class="fw-bold">Cantidad total</h5>
                             <div class="bg-light p-3 rounded">
-                                <p class="text-muted mb-0">{{ total_digitos }}</p>
+                                <p class="text-muted mb-0">{{ secuencia.numeros|length }}</p>
                             </div>
                         </div>
                     </div>
@@ -109,7 +109,7 @@
 
                     <!-- Filtro de Agrupación -->
                     <div class="row mb-4">
-                        <form method="post" action="{% url 'secuencia:modificar' id=secuencia.id %}">
+                        <form method="post" action="{% url 'generador:modificar' id=secuencia.id %}">
                             {% csrf_token %}
                             <h5 class="fw-bold">Agrupar dígitos</h5>
                             <div class="col-md-12">
@@ -131,7 +131,6 @@
                         <div class="bg-light p-3 rounded">
                             <code id="numerosGenerados"
                                 data-numeros="{{ secuencia.numeros }}">{{ secuencia.numeros|join:", " }}</code>
-
                         </div>
                     </div>
 
@@ -152,7 +151,7 @@
 
                     <!-- Botón de Volver -->
                     <div class="d-grid gap-2 mt-4">
-                        <a href="{% url 'secuencia:generar' %}" class="btn btn-primary">
+                        <a href="{% url 'generador:index' %}" class="btn btn-primary">
                             <i class="bi bi-arrow-left me-2"></i>Volver a la lista
                         </a>
                     </div>

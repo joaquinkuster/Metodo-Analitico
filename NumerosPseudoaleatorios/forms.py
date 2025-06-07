@@ -1,11 +1,11 @@
 from django import forms
 from .models import (
-    TesterBase,
     VonNeumann,
     CongruencialMultiplicativo,
     VALORES_P_VALIDOS,
     SecuenciaBase,
     ChiCuadrado,
+    Poker,
     Binomial,
     Exponencial,
 )
@@ -13,7 +13,7 @@ from .models import (
 class VonNeumannForm(forms.ModelForm):
     class Meta:
         model = VonNeumann
-        fields = ["semilla", "cantidad", "cantidad_digitos"]
+        fields = ["semilla", "cantidad_inicial", "cantidad_digitos"]
         widgets = {
             "semilla": forms.NumberInput(
                 attrs={
@@ -23,10 +23,10 @@ class VonNeumannForm(forms.ModelForm):
                     "required": True,
                 }
             ),
-            "cantidad": forms.NumberInput(
+            "cantidad_inicial": forms.NumberInput(
                 attrs={
                     "min": 1,
-                    "max": 100,
+                    "max": 1000,
                     "placeholder": "Cantidad de números",
                     "required": True,
                 }
@@ -41,7 +41,7 @@ class VonNeumannForm(forms.ModelForm):
         }
         labels = {
             "semilla": "Semilla (4 dígitos)",
-            "cantidad": "Cantidad inicial (n)",
+            "cantidad_inicial": "Cantidad inicial (n)",
             "cantidad_digitos": "Cantidad de dígitos (m)",
         }
 
@@ -49,15 +49,15 @@ class VonNeumannForm(forms.ModelForm):
 class CongruencialMultiplicativoForm(forms.ModelForm):
     class Meta:
         model = CongruencialMultiplicativo
-        fields = ["semilla", "cantidad", "cantidad_digitos", "t", "p", "modulo"]
+        fields = ["semilla", "cantidad_inicial", "cantidad_digitos", "t", "p", "modulo"]
         widgets = {
             "semilla": forms.NumberInput(
                 attrs={"min": 1, "placeholder": "Semilla inicial", "required": True}
             ),
-            "cantidad": forms.NumberInput(
+            "cantidad_inicial": forms.NumberInput(
                 attrs={
                     "min": 1,
-                    "max": 100,
+                    "max": 1000,
                     "placeholder": "Cantidad de números",
                     "required": True,
                 }
@@ -82,7 +82,7 @@ class CongruencialMultiplicativoForm(forms.ModelForm):
         }
         labels = {
             "semilla": "Semilla",
-            "cantidad": "Cantidad inicial (n)",
+            "cantidad_inicial": "Cantidad inicial (n)",
             "cantidad_digitos": "Cantidad de dígitos (m)",
             "t": "Parámetro t",
             "p": "Parámetro p",
@@ -98,10 +98,10 @@ class CongruencialMultiplicativoForm(forms.ModelForm):
 class ChiCuadradoForm(forms.ModelForm):
     class Meta:
         model = ChiCuadrado
-        fields = ["secuencia", "significancia", "cantidad_digitos"]
+        fields = ["secuencia", "significancia"]
         widgets = {
             "secuencia": forms.Select(
-                attrs={"placeholder": "Seleccioná secuencia", "required": True}
+                attrs={"placeholder": "Seleccione una secuencia", "required": True}
             ),
             "significancia": forms.NumberInput(
                 attrs={
@@ -113,34 +113,26 @@ class ChiCuadradoForm(forms.ModelForm):
                     "placeholder": "Nivel de significancia"
                 }
             ),
-            "cantidad_digitos": forms.NumberInput(
-                attrs={
-                    "min": 1,
-                    "max": 3,
-                    "step": 1,
-                    "required": True,
-                    "placeholder": "Cantidad de dígitos a agrupar"
-                }
-            ),
         }
         labels = {
             "secuencia": "Secuencia",
             "significancia": "Nivel de significancia (α)",
-            "cantidad_digitos": "Cantidad de dígitos a agrupar (n)",
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["secuencia"].queryset = SecuenciaBase.objects.all()
+        self.fields["secuencia"].empty_label = "Seleccione una secuencia"  # Texto personalizado
+
 
 
 class PokerForm(forms.ModelForm):
     class Meta:
-        model = TesterBase  # Asigna diseño de formulario a TesterBase para Poker
+        model = Poker  
         fields = ["secuencia", "significancia"]
         widgets = {
             "secuencia": forms.Select(
-                attrs={"placeholder": "Seleccioná secuencia", "required": True}
+                attrs={"placeholder": "Seleccione una secuencia", "required": True}
             ),
             "significancia": forms.NumberInput(
                 attrs={
@@ -157,6 +149,11 @@ class PokerForm(forms.ModelForm):
             "secuencia": "Secuencia",
             "significancia": "Nivel de significancia (α)",
         }
+        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["secuencia"].queryset = SecuenciaBase.objects.all()
+        self.fields["secuencia"].empty_label = "Seleccione una secuencia"  # Texto personalizado
 
 class BinomialForm(forms.ModelForm):
     class Meta:
@@ -164,7 +161,7 @@ class BinomialForm(forms.ModelForm):
         fields = ["secuencia", "p", "n"]
         widgets = {
             "secuencia": forms.Select(
-                attrs={"placeholder": "Seleccioná secuencia", "required": True}
+                attrs={"placeholder": "Seleccione una secuencia", "required": True}
             ),
             "p": forms.NumberInput(
                 attrs={
@@ -196,7 +193,7 @@ class ExponencialForm(forms.ModelForm):
         fields = ["secuencia", "tasa"]
         widgets = {
             "secuencia": forms.Select(
-                attrs={"placeholder": "Seleccioná secuencia", "required": True}
+                attrs={"placeholder": "Seleccione una secuencia", "required": True}
             ),
             "tasa": forms.NumberInput(
                 attrs={
