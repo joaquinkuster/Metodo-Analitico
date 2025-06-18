@@ -433,7 +433,7 @@ def generar_simulacion(request):
                 simulacion.determinar_camion_ideal()
 
                 messages.success(request, "Simulación generada exitosamente!")
-                # return redirect("simulacion:ver", simulacion.id)
+                return redirect("simulacion:ver", simulacion.id)
             except ValidationError as e:
                 # para cada campo y cada error, lo añadimos al form
                 for field, errs in e.message_dict.items():
