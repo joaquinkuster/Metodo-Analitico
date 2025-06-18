@@ -1,0 +1,305 @@
+{% extends "layouts/base.html" %}
+{% load form_tags %}
+
+{% block title %} Generador Números Pseudoaleatorios {% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Números Aleatorios</h1>
+        <span class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">{{ secuencias|length }}
+            secuencias</span>
+    </div>
+
+    <!-- Mensajes flash -->
+    {% for message in messages %}
+    {% if 'success' in message.tags %}
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        {{ message }}
+    </div>
+    {% elif 'error' in message.tags %}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        {{ message }}
+    </div>
+    {% endif %}
+    {% endfor %}
+
+    <div class="row">
+        <!-- Panel de Generación -->
+        <div class="col-xl-4 col-lg-5 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Generar secuencia</h6>
+                </div>
+                <div class="card-body">
+                    <!-- Selector de Método -->
+                    <div class="mb-4">
+                        <div class="btn-group w-100" role="group">
+                            <button type="button"
+                                class="btn btn-outline-primary {% if tipo_generador is None or tipo_generador == 'VN' %} active {% endif %}"
+                                id="btnToggle1" data-toggle-target="formToggle1">
+                                Von Neumann
+                            </button>
+                            <button type="button"
+                                class="btn btn-outline-primary {% if tipo_generador == 'CM' %} active {% endif %}"
+                                id="btnToggle2" data-toggle-target="formToggle2">
+                                Congruencial Multiplicativo
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Formulario Von Neumann -->
+                    <form method="post" action="{% url 'generador:generar' %}" id="formToggle1"
+                        class="{% if tipo_generador is not None and tipo_generador != 'VN' %} form-inactivo {% endif %}"
+                        data-toggle-form>
+                        {% csrf_token %}
+
+                        {% if von_neumann_form.numeros.errors %}
+                        <div class="invalid-feedback d-block mb-4">
+                            {{ von_neumann_form.numeros.errors.0 }}
+                        </div>
+                        {% endif %}
+                        
+                        <input type="hidden" name="tipo_generador" value="VN">
+                        <div class="row">
+                            <div class="col-md-6 form-group">
+                                <label for="{{ von_neumann_form.semilla.id_for_label }}"
+                                    class="form-label font-weight-bold">
+                                    {{ von_neumann_form.semilla.label }}</label>
+                                {{ von_neumann_form.semilla|add_class:"form-control" }}
+                                {% if von_neumann_form.semilla.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ von_neumann_form.semilla.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label for="{{ von_neumann_form.cantidad.id_for_label }}"
+                                    class="form-label font-weight-bold">
+                                    {{ von_neumann_form.cantidad.label }}</label>
+                                {{ von_neumann_form.cantidad|add_class:"form-control" }}
+                                <div class="form-text text-muted">
+                                    Nota: Indica el número total de vacas.
+                                </div>
+                                {% if von_neumann_form.cantidad.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ von_neumann_form.cantidad.errors.0 }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label for="{{ von_neumann_form.limite_inferior.id_for_label }}"
+                                    class="form-label font-weight-bold">
+                                    {{ von_neumann_form.limite_inferior.label }}</label>
+                                {{ von_neumann_form.limite_inferior|add_class:"form-control" }}
+                                {% if von_neumann_form.limite_inferior.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ von_neumann_form.limite_inferior.errors.0 }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label for="{{ von_neumann_form.limite_superior.id_for_label }}"
+                                    class="form-label font-weight-bold">
+                                    {{ von_neumann_form.limite_superior.label }}</label>
+                                {{ von_neumann_form.limite_superior|add_class:"form-control" }}
+                                {% if von_neumann_form.limite_superior.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ von_neumann_form.limite_superior.errors.0 }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-play-circle me-2"></i>Generar
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Formulario Congruencial Multiplicativo -->
+                    <form method="post" action="{% url 'generador:generar' %}" id="formToggle2"
+                        class="{% if tipo_generador is None or tipo_generador != 'CM' %} form-inactivo {% endif %}"
+                        data-toggle-form>
+                        {% csrf_token %}
+
+                        {% for field in congruencial_form.hidden_fields %}
+                        {% if field.errors %}
+                        <div class="invalid-feedback d-block mb-4">
+                            {{ field.errors.0 }}
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+
+                        <input type="hidden" name="tipo_generador" value="CM">
+                        <div class="row">
+                            <div class="col-md-6 form-group">
+                                <label for="{{ congruencial_form.semilla.id_for_label }}"
+                                    class="form-label font-weight-bold">
+                                    {{ congruencial_form.semilla.label }}</label>
+                                {{ congruencial_form.semilla|add_class:"form-control" }}
+                                {% if congruencial_form.semilla.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ congruencial_form.semilla.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label for="{{ congruencial_form.cantidad.id_for_label }}"
+                                    class="form-label font-weight-bold">
+                                    {{ congruencial_form.cantidad.label }}</label>
+                                {{ congruencial_form.cantidad|add_class:"form-control" }}
+                                <div class="form-text text-muted">
+                                    Nota: Indica el número total de vacas.
+                                </div>
+                                {% if congruencial_form.cantidad.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ congruencial_form.cantidad.errors.0 }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label for="{{ congruencial_form.limite_inferior.id_for_label }}"
+                                    class="form-label font-weight-bold">
+                                    {{ congruencial_form.limite_inferior.label }}</label>
+                                {{ congruencial_form.limite_inferior|add_class:"form-control" }}
+                                {% if congruencial_form.limite_inferior.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ congruencial_form.limite_inferior.errors.0 }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label for="{{ congruencial_form.limite_superior.id_for_label }}"
+                                    class="form-label font-weight-bold">
+                                    {{ congruencial_form.limite_superior.label }}</label>
+                                {{ congruencial_form.limite_superior|add_class:"form-control" }}
+                                {% if congruencial_form.limite_superior.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ congruencial_form.limite_superior.errors.0 }}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Separador -->
+                            <div class="col-12 d-flex align-items-center my-3">
+                                <span class="me-2 text-muted">Parámetros específicos</span>
+                                <hr class="flex-grow-1 my-0">
+                            </div>
+
+                            <div class="col-md-12 form-group">
+                                <label for="{{ congruencial_form.t.id_for_label }}" class="form-label font-weight-bold">
+                                    {{ congruencial_form.t.label }}
+                                </label>
+                                {{ congruencial_form.t|add_class:"form-control" }}
+                                {% if congruencial_form.t.errors %}
+                                <div class="invalid-feedback d-block">{{ congruencial_form.t.errors.0 }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label for="{{ congruencial_form.p.id_for_label }}" class="form-label font-weight-bold">
+                                    {{ congruencial_form.p.label }}
+                                </label>
+                                {{ congruencial_form.p|add_class:"form-control" }}
+                                {% if congruencial_form.p.errors %}
+                                <div class="invalid-feedback d-block">{{ congruencial_form.p.errors.0 }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label for="{{ congruencial_form.modulo.id_for_label }}"
+                                    class="form-label font-weight-bold">
+                                    {{ congruencial_form.modulo.label }}</label>
+                                {{ congruencial_form.modulo|add_class:"form-control" }}
+                                {% if congruencial_form.modulo.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ congruencial_form.modulo.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-play-circle me-2"></i>Generar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lista de Secuencias -->
+        <div class="col-xl-8 col-lg-7">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Secuencias generadas</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive rounded">
+                        <table class="table table-hover align-middle mb-0 p-3">
+                            <thead class="table-light text-center">
+                                <tr>
+                                    <th class="font-weight-bold">#</th>
+                                    <th>Método</th>
+                                    <th>Semilla</th>
+                                    <th>Cantidad</th>
+                                    <th>Números</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-center">
+                                {% for s in secuencias %}
+                                <tr>
+                                    <td class="font-weight-bold">{{ forloop.counter }}</td>
+                                    <td>
+                                        <span
+                                            class="btn btn-sm {% if s.tipo == 'VN' %}btn-info{% else %}btn-warning{% endif %}">
+                                            {{ s.get_tipo_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ s.semilla }}</td>
+                                    <td>{{ s.numeros|length }}</td>
+                                    <td>
+                                        <span class="d-inline-block text-truncate">
+                                            {{ s.numeros|join:", "|truncatechars:20 }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{% url 'generador:testear' s.id %}" class="btn btn-success"
+                                                title="Testear aleatoriedad">
+                                                <i class="fas fa-chart-area align-middle"></i>
+                                            </a>
+                                            <a href="{% url 'generador:ver' s.id %}" class="btn btn-primary"
+                                                title="Ver detalles">
+                                                <i class="fas fa-eye align-middle"></i>
+                                            </a>
+                                            <form action="{% url 'generador:eliminar' s.id %}" method="post">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-danger btnEliminar rounded-start-0"
+                                                    title="Eliminar">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center py-4">
+                                        <div class="text-muted">
+                                            <i class="bi bi-info-circle fs-4"></i>
+                                            <p class="mt-2 mb-0">No hay secuencias registradas</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

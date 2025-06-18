@@ -1,0 +1,201 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Resultado Test Chi-Cuadrado {% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+
+    <!-- Mensajes flash -->
+    {% for message in messages %}
+    {% if 'success' in message.tags %}
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        {{ message }}
+    </div>
+    {% elif 'error' in message.tags %}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        {{ message }}
+    </div>
+    {% endif %}
+    {% endfor %}
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex flex-wrap align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary me-2">[{{ test.id }}] {{ test.get_tipo_display }}</h6>
+                    {% if test.aprobado %}
+                    <span class="btn btn-sm btn-success">
+                        Aprobado
+                    </span>
+                    {% else %}
+                    <span class="btn btn-sm btn-danger">
+                        No Aprobado
+                    </span>
+                    {% endif %}
+                </div>
+
+                <div class="card-body">
+
+                    <div class="row">
+
+                        <!-- Resultados principales -->
+                        <div class="col-12 d-flex align-items-center my-3">
+                            <span class="me-2 text-muted">Resultados del test</span>
+                            <hr class="flex-grow-1 my-0">
+                        </div>
+
+                        <div class="col-md-4 form-group">
+                            <label class="font-weight-bold">Nivel de significancia (α)</label>
+                            <div class="bg-light p-3 rounded">
+                                <p class="text-muted mb-0">{{ test.significancia|floatformat:2 }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 form-group">
+                            <label class="font-weight-bold">Estadístico de prueba</label>
+                            <div class="bg-light p-3 rounded">
+                                <p class="text-muted mb-0">{{ test.estadistico_prueba|floatformat:4 }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 form-group">
+                            <label class="font-weight-bold">Valor crítico</label>
+                            <div class="bg-light p-3 rounded">
+                                <p class="text-muted mb-0">{{ test.valor_critico|floatformat:4 }}</p>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 form-group">
+                            <label class="font-weight-bold">P-valor</label>
+                            <div class="bg-light p-3 rounded">
+                                <p class="text-muted mb-0">{{ test.pvalor|floatformat:4 }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 form-group">
+                            <label class="font-weight-bold">Grados de libertad (gl)</label>
+                            <div class="bg-light p-3 rounded">
+                                <p class="text-muted mb-0">{{ test.grados_libertad }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 form-group">
+                            <label class="font-weight-bold">Cantidad de intervalos (k)</label>
+                            <div class="bg-light p-3 rounded">
+                                <p class="text-muted mb-0">{{ test.frecuencias_esperadas|length }}</p>
+                            </div>
+                        </div>
+                        
+                        {% if test.aprobado %}
+                        <div class="col-md-4 form-group">
+                            <a href="{% url 'generador:distribuir' test.secuencia.id %}" class="btn btn-primary">
+                                <i class="bi bi-arrow-left me-2"></i>Generar distribución
+                            </a>
+                        </div>
+                        {% endif %}
+
+                        <!-- Frecuencias -->
+                        <div class="col-12 d-flex align-items-center my-3">
+                            <span class="me-2 text-muted">Distribución de frecuencias</span>
+                            <hr class="flex-grow-1 my-0">
+                        </div>
+
+                        <div class="col-12 form-group">
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-hover text-center">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th scope="col">Categoría</th>
+                                            <th scope="col">Frecuencia observada (fo)</th>
+                                            <th scope="col">Frecuencia esperada (fe)</th>
+                                            <th scope="col">fo - fe</th>
+                                            <th scope="col">(fo - fe)<sup>2</sup></th>
+                                            <th scope="col">(fo - fe)<sup>2</sup> / fe</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for cat, fo, fe, dif, dif_cuad, dif_cuad_fe in categorias_con_frecuencias %}
+                                        <tr>
+                                            {% if test.tipo == 'CC' %}
+                                            <td>[{{ cat.0|floatformat:2 }} - {{ cat.1|floatformat:2 }})</td>
+                                            {% else %}
+                                            <td>{{ cat }}</td>
+                                            {% endif %}
+                                            <td>{{ fo }}</td>
+                                            <td>{{ fe|floatformat:2 }}</td>
+                                            <td>{{ dif|floatformat:2 }}</td>
+                                            <td>{{ dif_cuad|floatformat:2 }}</td>
+                                            <td>{{ dif_cuad_fe|floatformat:2 }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Gráfico (opcional) -->
+                        <div class="col-12 d-flex align-items-center my-3">
+                            <span class="me-2 text-muted">Visualización</span>
+                            <hr class="flex-grow-1 my-0">
+                        </div>
+
+                        <div class="col-12 form-group">
+                            <div class="bg-light p-3 rounded"
+                                style="position: relative; height: 70vh; min-height: 500px;">
+                                <canvas id="chiCuadradoChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Campos necesarios para el gráfico -->
+                        <input type="hidden" id="estadistico_prueba" value="{{ test.estadistico_prueba }}">
+                        <input type="hidden" id="valor_critico" value="{{ test.valor_critico }}">
+                        <input type="hidden" id="grados_libertad" value="{{ test.grados_libertad }}">
+                        <input type="hidden" id="aprobado" value="{{ test.aprobado }}">
+
+                        <!-- Información de la secuencia -->
+                        <div class="col-12 d-flex align-items-center my-3">
+                            <span class="me-2 text-muted">Secuencia analizada</span>
+                            <hr class="flex-grow-1 my-0">
+                        </div>
+
+                        <div class="col-md-12 form-group">
+                            <label class="font-weight-bold">Números generados</label>
+                            <div class="bg-light p-3 rounded">
+                                <code>{{ test.secuencia.numeros|join:", " }}</code>
+                            </div>
+                            <div class="d-grid gap-2 mt-4">
+                                <a href="{% url 'generador:ver' test.secuencia.id %}" class="btn btn-primary">
+                                    <i class="bi bi-arrow-left me-2"></i>Ver secuencia
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 form-group">
+                            <label class="font-weight-bold">Tipo de generador</label>
+                            <div class="bg-light p-3 rounded">
+                                <p class="text-muted mb-0">{{ test.secuencia.get_tipo_display }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 form-group">
+                            <label class="font-weight-bold">Cantidad</label>
+                            <div class="bg-light p-3 rounded">
+                                <p class="text-muted mb-0">{{ test.secuencia.cantidad }}</p>
+                            </div>
+                        </div>
+
+                        <!-- Información adicional -->
+                        <div class="col-12 d-flex align-items-center my-3">
+                            <span class="me-2 text-muted">Información adicional</span>
+                            <hr class="flex-grow-1 my-0">
+                        </div>
+
+                        <div class="col-md-12 form-group">
+                            <label class="font-weight-bold">Fecha de creación</label>
+                            <div class="bg-light p-3 rounded">
+                                <p class="text-muted mb-0">{{ test.fecha_creacion|date:'d/m/Y H:i' }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

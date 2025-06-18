@@ -1,0 +1,175 @@
+{% extends "layouts/base.html" %}
+{% load form_tags %}
+
+{% block title %} Generar Distribuciones {% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <!-- Mensajes flash -->
+    {% for message in messages %}
+    {% if 'success' in message.tags %}
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% elif 'error' in message.tags %}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endif %}
+    {% endfor %}
+
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h2 class="h5 mb-0">
+                            <i class="bi bi-list-columns-reverse me-2"></i>Ejemplo de distribucion exponencial
+                        </h2>
+                    </div>
+                </div>
+                <div class="card-body mt-0">
+                    <div class="bg-light p-3 rounded">
+                        <p class="text-muted">Comprobar que el tiempo de revisión del motor de un avión puede ajustarse a una distribución exponencial con media 22 minutos</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+
+        <!-- Resultados del Ejemplo -->
+        <div class="col-xxl-12 col-lg-12">
+            <div class="card border-0 shadow-lg h-100">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h2 class="h5 mb-0">
+                            <i class="bi bi-list-columns-reverse me-2"></i>Resultados del ejemplo
+                        </h2>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Parámetros específicos -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5 class="fw-bold">Tasa <code>(λ)</code></h5>
+                            <div class="bg-light p-3 rounded">
+                                <p class="text-muted mb-0">1/22</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Estadísticos -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5 class="fw-bold">Esperanza <code>E(x)</code></h5>
+                            <div class="bg-light p-3 rounded">
+                                <p class="text-muted mb-0">22</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h5 class="fw-bold">Varianza <code>V(x)</code></h5>
+                            <div class="bg-light p-3 rounded">
+                                <p class="text-muted mb-0">484</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Valores de x -->
+                    <div class="mb-4">
+                        <h5 class="fw-bold">Marcas de clase</h5>
+                        <div class="bg-light p-3 rounded">
+                            <code>
+                                0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 9.5, 10.0, 10.5, 11.0, 11.5, 12.0, 12.5, 13.0, 13.5, 14.0, 14.5, 15.0, 15.5, 16.0, 16.5, 17.0, 17.5, 18.0, 18.5, 19.0, 19.5, 20.0
+                            </code>
+                        </div>
+                    </div>
+
+                    <!-- Valores de probabilidad -->
+                    <div class="mb-4">
+                        <h5 class="fw-bold">Probabilidades puntuales <code>f(x)</code></h5>
+                        <div class="bg-light p-3 rounded">
+                            <code>
+                            0.045455, 0.044433, 0.043435, 0.042459, 0.041505, 0.040572, 0.039660, 0.038769, 0.037898, 0.037046, 0.036214, 0.035400, 0.034605, 0.033827, 0.033067, 0.032324, 0.031597, 0.030887, 0.030193, 0.029515, 0.028852, 0.028203, 0.027570, 0.026950, 0.026344, 0.025752, 0.025174, 0.024608, 0.024055, 0.023515, 0.022470, 0.021965, 0.021471, 0.020989, 0.020517, 0.020056, 0.019605, 0.019165, 0.018734, 0.018313
+                            </code>
+                        </div>
+                    </div>
+
+                    <!-- Valores acumulados -->
+                    <div class="mb-4">
+                        <h5 class="fw-bold">Probabilidades acumuladas <code>F(x)</code></h5>
+                        <div class="bg-light p-3 rounded">
+                            <code>
+                            0.000000, 0.022471, 0.044437, 0.065909, 0.086899, 0.0107418, 0.0127475, 0.0147081, 0.166247, 0.184982, 0.203297, 0.221199, 0.238700, 0.255807, 0.272529, 0.288876, 0.304856, 0.320477, 0.335746, 0.350673, 0.365264, 0.379527, 0.393469, 0.407099, 0.420422, 0.433445, 0.446176, 0.470787, 0.482679, 0.494303, 0.505667, 0.516775, 0.527633, 0.538248, 0.548624, 0.558767, 0.568682, 0.578374, 0.587848, 0.597110
+                            </code>
+                        </div>
+                    </div>
+
+                    <!-- Gráfico de densidad / probabilidad (PDF) -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="fw-bold">Función de densidad / probabilidad <code>f(x)</code></h5>
+                            <p class="mb-2"><em>X</em> &sim; Exp(&lambda; = <strong>
+                                    1/22</strong>)</p>
+                            <div id="grafico-pdf"></div>
+                        </div>
+                    </div>
+
+                    <!-- Gráfico de distribución acumulada (CDF) -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="fw-bold">Función de distribución acumulada <code>F(x)</code></h5>
+                            <p class="mb-2"><em>X</em> &sim; Exp(&lambda; = <strong>
+                                    1/22</strong>)</p>
+                            <div id="grafico-cdf"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script src="https://cdn.plot.ly/plotly-2.30.0.min.js"></script>
+<script>
+    const xs = [0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 9.5, 10.0, 10.5, 11.0, 11.5, 12.0, 12.5, 13.0, 13.5, 14.0, 14.5, 15.0, 15.5, 16.0, 16.5, 17.0, 17.5, 18.0, 18.5, 19.0, 19.5, 20.0];
+    const pdf = [0.045455, 0.044433, 0.043435, 0.042459, 0.041505, 0.040572, 0.039660, 0.038769, 0.037898, 0.037046, 0.036214, 0.035400, 0.034605, 0.033827, 0.033067, 0.032324, 0.031597, 0.030887, 0.030193, 0.029515, 0.028852, 0.028203, 0.027570, 0.026950, 0.026344, 0.025752, 0.025174, 0.024608, 0.024055, 0.023515, 0.022470, 0.021965, 0.021471, 0.020989, 0.020517, 0.020056, 0.019605, 0.019165, 0.018734, 0.018313]
+;
+    const cdf = [0.000000, 0.022471, 0.044437, 0.065909, 0.086899, 0.107418, 0.127475, 0.147081, 0.166247, 0.184982, 0.203297, 0.221199, 0.238700, 0.255807, 0.272529, 0.288876, 0.304856, 0.320477, 0.335746, 0.350673, 0.365264, 0.379527, 0.393469, 0.407099, 0.420422, 0.433445, 0.446176, 0.458621, 0.470787, 0.482679, 0.494303, 0.505667, 0.516775, 0.527633, 0.538248, 0.548624, 0.558767, 0.568682, 0.578374, 0.587848, 0.597110];
+
+    // Configuración condicional para el gráfico de f(x)
+
+    const tipoPdf = 'scatter';
+    const modoPdf = 'lines';
+    const tituloY = 'f(x)';
+
+    Plotly.newPlot('grafico-pdf', [{
+        x: xs,
+        y: pdf,
+        type: tipoPdf,
+        mode: modoPdf
+    }], {
+        xaxis: { title: 'x' },
+        yaxis: { title: tituloY }
+    });
+
+    // Gráfico de F(x)
+    Plotly.newPlot('grafico-cdf', [{
+        x: xs,
+        y: cdf,
+        type: 'scatter',
+        mode: 'lines'
+    }], {
+        xaxis: { title: 'x' },
+        yaxis: { title: 'F(x)' }
+    });
+
+    window.addEventListener('resize', function () {
+        Plotly.Plots.resize('grafico-pdf');
+        Plotly.Plots.resize('grafico-cdf');
+    });
+</script>
+{% endblock %}

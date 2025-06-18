@@ -1,11 +1,11 @@
-.menu-principal {
-    height: 80vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-}
-
 .form-inactivo {
     display: none;
+}
+
+.rounded-start-0{
+    border-radius: 0 .25rem .25rem 0 !important;
+}
+
+.select2{
+    width: 100% !important;
 }

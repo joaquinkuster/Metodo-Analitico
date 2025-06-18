@@ -1,0 +1,265 @@
+{% extends "layouts/base.html" %}
+{% load form_tags %}
+
+{% block title %} Testear Números Pseudoaleatorios {% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Test de Aleatoriedad</h1>
+        <span class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">{{ tests|length }}
+            tests</span>
+    </div>
+
+    <!-- Mensajes flash -->
+    {% for message in messages %}
+    {% if 'success' in message.tags %}
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        {{ message }}
+    </div>
+    {% elif 'error' in message.tags %}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        {{ message }}
+    </div>
+    {% endif %}
+    {% endfor %}
+
+    <div class="row">
+        <!-- Panel de Test -->
+        <div class="col-xl-4 col-lg-5 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Testear aleatoriedad</h6>
+                </div>
+                <div class="card-body">
+                    <!-- Selector de Método -->
+                    <div class="mb-4">
+                        <div class="btn-group w-100" role="group">
+                            <button type="button"
+                                class="btn btn-outline-primary {% if tipo_tester is None or tipo_tester == 'CC' %} active {% endif %}"
+                                id="btnToggle1" data-toggle-target="formToggle1">
+                                Chi-Cuadrado
+                            </button>
+                            <button type="button"
+                                class="btn btn-outline-primary {% if tipo_tester == 'PK' %} active {% endif %}"
+                                id="btnToggle2" data-toggle-target="formToggle2">
+                                Poker
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Input hidden para los datos de secuencias (compartido) -->
+                    <input type="hidden" id="data-secuencias"
+                        value="{% for s in chi_cuadrado_form.secuencia.field.queryset %}{{ s.id }}={{ s.numeros|truncatechars:200 }}{% if not forloop.last %};{% endif %}{% endfor %}">
+
+                    <!-- Formulario Chi-Cuadrado -->
+                    <form method="post" action="{% url 'test:generar' %}" id="formToggle1"
+                        class="{% if tipo_tester is not None and tipo_tester != 'CC' %} form-inactivo {% endif %}"
+                        data-toggle-form>
+                        {% csrf_token %}
+
+                        <!-- Validaciones desde el modelo -->
+                        {% for field in chi_cuadrado_form.hidden_fields %}
+                        {% if field.errors %}
+                        <div class="invalid-feedback d-block mb-4">
+                            {{ field.errors.0 }}
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+
+                        <input type="hidden" name="tipo_tester" value="CC">
+                        <div class="row">
+                            <!-- Nivel de Significancia -->
+                            <div class="col-md-12 form-group">
+                                <label for="{{ chi_cuadrado_form.significancia.id_for_label }}"
+                                    class="form-label font-weight-bold">
+                                    {{ chi_cuadrado_form.significancia.label }}</label>
+                                {{ chi_cuadrado_form.significancia|add_class:"form-control" }}
+                                {% if chi_cuadrado_form.significancia.errors %}
+                                <div class="invalid-feedback d-block">{{ chi_cuadrado_form.significancia.errors.0 }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <!-- Separador -->
+                            <div class="col-12 d-flex align-items-center my-3">
+                                <span class="me-2 text-muted">Números pseudoaleatorios</span>
+                                <hr class="flex-grow-1 my-0">
+                            </div>
+                            <!-- Selección de Secuencia -->
+                            <div class="col-md-12 form-group">
+                                <label for="{{ chi_cuadrado_form.secuencia.id_for_label }}"
+                                    class="form-label font-weight-bold">
+                                    {{ chi_cuadrado_form.secuencia.label }}</label>
+                                {{ chi_cuadrado_form.secuencia|add_class:"form-control" }}
+                                {% if chi_cuadrado_form.secuencia.errors %}
+                                <div class="invalid-feedback d-block">{{ chi_cuadrado_form.secuencia.errors.0 }}</div>
+                                {% endif %}
+
+                                <!-- Contenedor para mostrar los números -->
+                                <div id="numeros-secuencia" class="mt-2 p-2 bg-light rounded" style="display:none;">
+                                    <h6>Números de la secuencia (mostrando primeros 200 caracteres):</h6>
+                                    <div id="numeros-contenido" class="text-muted"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-play-circle me-2"></i>Testear
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Formulario Poker -->
+                    <form method="post" action="{% url 'test:generar' %}" id="formToggle2"
+                        class="{% if tipo_tester is None or tipo_tester != 'PK' %} form-inactivo {% endif %}"
+                        data-toggle-form>
+                        {% csrf_token %}
+
+                        <!-- Validaciones desde el modelo -->
+                        {% for field in poker_form.hidden_fields %}
+                        {% if field.errors %}
+                        <div class="invalid-feedback d-block mb-4">
+                            {{ field.errors.0 }}
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+
+                        <input type="hidden" name="tipo_tester" value="PK">
+                        <div class="row">
+                            <!-- Nivel de Significancia -->
+                            <div class="col-md-12 form-group">
+                                <label for="{{ poker_form.significancia.id_for_label }}"
+                                    class="form-label font-weight-bold">
+                                    {{ poker_form.significancia.label }}</label>
+                                {{ poker_form.significancia|add_class:"form-control" }}
+                                {% if poker_form.significancia.errors %}
+                                <div class="invalid-feedback d-block">{{ poker_form.significancia.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <!-- Separador -->
+                            <div class="col-12 d-flex align-items-center my-3">
+                                <span class="me-2 text-muted">Números pseudoaleatorios</span>
+                                <hr class="flex-grow-1 my-0">
+                            </div>
+                            <!-- Selección de Secuencia -->
+                            <div class="col-md-12 form-group">
+                                <label for="{{ poker_form.secuencia.id_for_label }}"
+                                    class="form-label font-weight-bold">
+                                    {{ poker_form.secuencia.label }}</label>
+                                {{ poker_form.secuencia|add_class:"form-control" }}
+                                {% if poker_form.secuencia.errors %}
+                                <div class="invalid-feedback d-block">{{ poker_form.secuencia.errors.0 }}</div>
+                                {% endif %}
+
+                                <!-- Contenedor para mostrar los números -->
+                                <div id="numeros-secuencia" class="mt-2 p-2 bg-light rounded" style="display:none;">
+                                    <h6>Números de la secuencia (mostrando primeros 200 caracteres):</h6>
+                                    <div id="numeros-contenido" class="text-muted"></div>
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-play-circle me-2"></i>Testear
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lista de Tests -->
+        <div class="col-xl-8 col-lg-7">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Tests generados</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive rounded">
+                        <table class="table table-hover align-middle mb-0 p-3">
+                            <thead class="table-light text-center">
+                                <tr>
+                                    <th class="font-weight-bold">#</th>
+                                    <th>Método</th>
+                                    <th>Significancia</th>
+                                    <th>Observadas</th>
+                                    <th>Esperadas</th>
+                                    <th>Secuencia</th>
+                                    <th>Resultado</th>
+                                    <th>P-valor</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-center">
+                                {% for t in tests %}
+                                <tr>
+                                    <td class="font-weight-bold">{{ forloop.counter }}</td>
+                                    <td class="text-nowrap">
+                                        <span
+                                            class="btn btn-sm {% if t.tipo == 'CC' %}btn-info{% else %}btn-warning{% endif %}">
+                                            {{ t.get_tipo_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ t.significancia }}</td>
+                                    <td>
+                                        <span class="d-inline-block text-truncate">
+                                            {{ t.frecuencias_observadas|join:", "|truncatechars:20 }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="d-inline-block text-truncate">
+                                            {{ t.frecuencias_esperadas|join:", "|truncatechars:20 }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="d-inline-block text-truncate">
+                                            {{ t.secuencia.numeros|join:", "|truncatechars:20 }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if t.aprobado %}
+                                        <span class="btn btn-sm btn-success">Aprobado</span>
+                                        {% else %}
+                                        <span class="btn btn-sm btn-danger">Rechazado</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ t.pvalor|floatformat:6 }}</td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{% url 'test:ver' t.id %}" class="btn btn-primary"
+                                                title="Ver detalles">
+                                                <i class="fas fa-eye align-middle"></i>
+                                            </a>
+                                            <form action="{% url 'test:eliminar' t.id %}" method="post">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-danger btnEliminar rounded-start-0"
+                                                    title="Eliminar">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="9" class="text-center py-4">
+                                        <div class="text-muted">
+                                            <i class="bi bi-info-circle fs-4"></i>
+                                            <p class="mt-2 mb-0">No hay tests registrados</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
