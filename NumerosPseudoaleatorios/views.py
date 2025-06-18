@@ -3,15 +3,15 @@ from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.urls import reverse
 from .models import (
-    ChiCuadrado,
     TipoGenerador,
-    VonNeumann,
-    CongruencialMultiplicativo,
     SecuenciaBase,
     TesterBase,
     TipoTester,
     TipoDistribucion,
     DistribucionBase,
+    Simulacion,
+    Camion,
+    SimulacionCamion,
 )
 from .forms import (
     VonNeumannForm,
@@ -20,14 +20,12 @@ from .forms import (
     PokerForm,
     BinomialForm,
     ExponencialForm,
+    TriangularForm,
+    SimulacionForm,
+    CamionForm,
 )
 from django.views.decorators.http import require_POST
 from .services.test import poker
-from .services import utils
-
-
-def index(request):
-    return render(request, "index.html")
 
 
 # Funciones para gestionar las secuencias
@@ -35,7 +33,9 @@ def generar_secuencia(request):
     # Inicializar ambos formularios
     von_neumann_form = VonNeumannForm()
     congruencial_form = CongruencialMultiplicativoForm()
-    tipo = request.POST.get("tipo_generador") or "VN"
+    tipo = (
+        request.POST.get("tipo_generador") or request.GET.get("tipo_generador") or "VN"
+    )
     form = None
 
     # Procesar POST
@@ -53,6 +53,7 @@ def generar_secuencia(request):
                 secuencia = form.save(commit=False)
                 secuencia.save()
                 messages.success(request, "Secuencia generada exitosamente!")
+                return redirect("generador:ver", secuencia.id)
             except ValidationError as e:
                 # para cada campo y cada error, lo añadimos al form
                 for field, errs in e.message_dict.items():
@@ -73,17 +74,18 @@ def generar_secuencia(request):
         },
     )
 
+
 @require_POST
 def eliminar_secuencia(request, id):
     secuencia = SecuenciaBase.objects.get(id=id)
 
     if secuencia is None:
         messages.error(request, "No se encontró la secuencia a eliminar.")
-        return redirect("generador:index")
+        return redirect("generador:generar")
 
     secuencia.delete()
     messages.success(request, "Secuencia eliminada exitosamente.")
-    return redirect("generador:index")
+    return redirect("generador:generar")
 
 
 def ver_secuencia(request, id):
@@ -91,38 +93,17 @@ def ver_secuencia(request, id):
 
     if secuencia is None:
         messages.error(request, "No se encontró la secuencia para visualizar.")
-        return redirect("generador:index")
-    
-    total_digitos = len(utils.separar_digitos(secuencia.numeros))
+        return redirect("generador:generar")
+
+    # total_digitos = len(utils.separar_digitos(secuencia.numeros))
 
     return render(
         request,
         "pages/generador/ver.html",
         {
-            "total_digitos": total_digitos,
             "secuencia": secuencia,
         },
     )
-    
-@require_POST
-def modificar_secuencia(request, id):
-    secuencia = SecuenciaBase.objects.get(id=id)
-        
-    if secuencia is None:
-        messages.error(request, "No se encontró la secuencia a modificar.")
-        return redirect("generador:index")
-    
-    cantidad_digitos = request.POST.get('cantidad_digitos')
-        
-    try:
-        secuencia.cantidad_digitos = int(cantidad_digitos)
-        secuencia.save()
-        messages.success(request, "Cantidad de dígitos actualizada exitosamente.")
-        
-    except Exception as e:
-        messages.error(request, f"Error al modificar la secuencia: {str(e)}")
-    
-    return redirect("generador:ver", id)
 
 
 # Funciones para gestionar los tests
@@ -131,7 +112,7 @@ def generar_test(request):
     id_secuencia = request.GET.get("id_secuencia") or None
     chi_cuadrado_form = ChiCuadradoForm(initial={"secuencia": id_secuencia})
     poker_form = PokerForm()
-    tipo = request.POST.get("tipo_tester") or "CC"
+    tipo = request.POST.get("tipo_tester") or request.GET.get("tipo_tester") or "CC"
     form = None
 
     # Procesar POST
@@ -149,6 +130,7 @@ def generar_test(request):
                 test = form.save(commit=False)
                 test.save()
                 messages.success(request, "Test de aleatoriedad generado exitosamente!")
+                return redirect("test:ver", test.id)
             except ValidationError as e:
                 # para cada campo y cada error, lo añadimos al form
                 for field, errs in e.message_dict.items():
@@ -169,6 +151,7 @@ def generar_test(request):
         },
     )
 
+
 @require_POST
 def eliminar_test(request, id):
     test = TesterBase.objects.get(id=id)
@@ -188,23 +171,23 @@ def ver_test(request, id):
     if test is None:
         messages.error(request, "No se encontró el test para visualizar.")
         return redirect("test:generar")
-    
+
     categorias = None
     if test.tipo == TipoTester.CHI_CUADRADO:
         categorias = test.chicuadrado.intervalos
     else:
-        categorias = list(poker.obtener_probabilidades_teoricas().keys())    
-        
+        categorias = list(poker.obtener_probabilidades_teoricas().keys())
+
     # Preparar datos para la tabla de frecuencias
     categorias_con_frecuencias = zip(
         categorias,
         test.frecuencias_observadas,
-        test.frecuencias_esperadas, 
+        test.frecuencias_esperadas,
         test.diferencia,
         test.diferencia_cuadrado,
         test.diferencia_cuadrado_fe,
     )
-    
+
     return render(
         request,
         "pages/test/ver.html",
@@ -220,12 +203,19 @@ def testear_secuencia(request, id):
     secuencia = get_object_or_404(SecuenciaBase, id=id)
     return redirect(f'{reverse("test:generar")}?id_secuencia={secuencia.id}')
 
+
 # Funciones para gestionar las distribuciones
 def generar_distribucion(request):
     # Inicializar ambos formularios
-    binomial_form = BinomialForm()
+    id_secuencia = request.GET.get("id_secuencia") or None
+    binomial_form = BinomialForm(initial={"secuencia": id_secuencia})
     exponencial_form = ExponencialForm()
-    tipo = request.POST.get("tipo_distribucion") or "BI"
+    triangular_form = TriangularForm()
+    tipo = (
+        request.POST.get("tipo_distribucion")
+        or request.GET.get("tipo_distribucion")
+        or "BI"
+    )
     form = None
 
     # Procesar POST
@@ -236,6 +226,9 @@ def generar_distribucion(request):
         elif tipo == TipoDistribucion.EXPONENCIAL:
             exponencial_form = ExponencialForm(request.POST)
             form = exponencial_form
+        elif tipo == TipoDistribucion.TRIANGULAR:
+            triangular_form = TriangularForm(request.POST)
+            form = triangular_form
 
         if form.is_valid():
             try:
@@ -243,6 +236,7 @@ def generar_distribucion(request):
                 distribucion = form.save(commit=False)
                 distribucion.save()
                 messages.success(request, "Distribución generada exitosamente!")
+                return redirect("distribucion:ver", distribucion.id)
             except ValidationError as e:
                 # para cada campo y cada error, lo añadimos al form
                 for field, errs in e.message_dict.items():
@@ -254,14 +248,28 @@ def generar_distribucion(request):
 
     return render(
         request,
-        "pages/distribucion/generar.html",
+        "pages/distribucion/index.html",
         {
             "binomial_form": binomial_form,
             "exponencial_form": exponencial_form,
+            "triangular_form": triangular_form,
             "tipo_distribucion": tipo,
             "distribuciones": distribuciones,
         },
     )
+
+
+@require_POST
+def eliminar_distribucion(request, id):
+    distribucion = DistribucionBase.objects.get(id=id)
+
+    if distribucion is None:
+        messages.error(request, "No se encontró la distribución a eliminar.")
+        return redirect("distribucion:generar")
+
+    distribucion.delete()
+    messages.success(request, "Distribución eliminada exitosamente.")
+    return redirect("distribucion:generar")
 
 
 def ver_distribucion(request, id):
@@ -272,14 +280,52 @@ def ver_distribucion(request, id):
         messages.error(request, "No se encontró la distribución para visualizar.")
         return redirect("distribucion:generar")
 
-    # Renderizamos la plantilla de detalle
+    # Armamos las categorías con sus probabilidades
+    if distribucion.tipo != TipoDistribucion.BINOMIAL:
+        categorias = distribucion.continua.intervalos
+        categorias_sim = distribucion.continua.intervalos_sim
+        marcas = distribucion.continua.marcas_de_clase
+        marcas_sim = distribucion.continua.marcas_de_clase_sim
+        probabilidades, acumuladas = distribucion.continua.agrupar_densidades()
+    else:
+        categorias = distribucion.variable_aleatoria
+        categorias_sim = distribucion.variable_aleatoria_sim
+        marcas = marcas_sim = (
+            None  # o una lista del mismo largo si lo necesitas para la tabla
+        )
+        probabilidades = distribucion.probabilidades
+        acumuladas = distribucion.acumuladas
+
+    distribucion_probabilidades = zip(
+        categorias,
+        marcas if marcas else [None] * len(categorias),
+        probabilidades,
+        acumuladas,
+    )
+
+    distribucion_probabilidades_obs = zip(
+        categorias_sim,
+        marcas_sim if marcas_sim else [None] * len(categorias_sim),
+        distribucion.probabilidades_sim,
+        distribucion.acumuladas_sim,
+    )
+
+    # Renderizamos la plantilla
     return render(
         request,
         "pages/distribucion/ver.html",
         {
             "distribucion": distribucion,
+            "distribucion_probabilidades": distribucion_probabilidades,
+            "distribucion_probabilidades_obs": distribucion_probabilidades_obs,
         },
     )
+
+
+def distribuir_secuencia(request, id):
+    # Versión mejorada con manejo de errores
+    secuencia = get_object_or_404(SecuenciaBase, id=id)
+    return redirect(f'{reverse("distribucion:generar")}?id_secuencia={secuencia.id}')
 
 
 def menu_ejemplos(request):
@@ -306,3 +352,158 @@ def ejemplos_distribucion(request, distribucion):
             "pages/distribucion/ejemplos/exponencial.html",
             {"exponencial_form": exponencial_form},
         )
+
+
+# Funciones para gestionar los camiones
+def guardar_camion(request):
+
+    camion_form = CamionForm()
+
+    if request.method == "POST":
+        camion_form = CamionForm(request.POST)
+        if camion_form.is_valid():
+            try:
+                # Guardar el camión (las validaciones están en el modelo)
+                camion = camion_form.save(commit=False)
+                camion.save()
+                messages.success(request, "Camión agregado exitosamente!")
+            except ValidationError as e:
+                # para cada campo y cada error, lo añadimos al form
+                # para cada campo y cada error, lo añadimos al form
+                for field, errs in e.message_dict.items():
+                    for err in errs:
+                        camion_form.add_error(field, err)
+
+    # Obtenemos los camiones
+    camiones = list(Camion.objects.all())
+
+    return render(
+        request,
+        "pages/simulacion/camion.html",
+        {
+            "camion_form": camion_form,
+            "camiones": camiones,
+        },
+    )
+
+
+@require_POST
+def eliminar_camion(request, id):
+    camion = Camion.objects.get(id=id)
+
+    if camion is None:
+        messages.error(request, "No se encontró el camión a eliminar.")
+        return redirect("camion:guardar")
+
+    camion.delete()
+    messages.success(request, "Camión eliminado exitosamente.")
+    return redirect("camion:guardar")
+
+
+# Funciones para gestionar las simulaciones
+def generar_simulacion(request):
+
+    id_distribucion = request.GET.get("id_distribucion") or None
+    simulacion_form = SimulacionForm(initial={"triangular": id_distribucion})
+
+    # Procesar POST
+    if request.method == "POST":
+
+        simulacion_form = SimulacionForm(request.POST)
+
+        if simulacion_form.is_valid():
+
+            try:
+                # Guardar la simulación (las validaciones están en el modelo)
+                simulacion = simulacion_form.save(commit=False)
+                simulacion.save()
+
+                # Crear las relaciones intermedias
+                for camion in simulacion_form.cleaned_data["camiones"]:
+                    SimulacionCamion.objects.create(simulacion=simulacion, camion=camion)
+
+                # Procesar camiones y determinar el ideal
+                simulacion.determinar_camion_ideal()
+
+                messages.success(request, "Simulación generada exitosamente!")
+                # return redirect("simulacion:ver", simulacion.id)
+            except ValidationError as e:
+                # para cada campo y cada error, lo añadimos al form
+                for field, errs in e.message_dict.items():
+                    for err in errs:
+                        simulacion_form.add_error(field, err)
+
+    # Obtener todas las simulaciones
+    simulaciones = list(Simulacion.objects.all())
+
+    return render(
+        request,
+        "pages/simulacion/index.html",
+        {
+            "simulacion_form": simulacion_form,
+            "simulaciones": simulaciones,
+        },
+    )
+
+
+@require_POST
+def eliminar_simulacion(request, id):
+    simulacion = Simulacion.objects.get(id=id)
+
+    if simulacion is None:
+        messages.error(request, "No se encontró la simulación a eliminar.")
+        return redirect("simulacion:generar")
+
+    simulacion.delete()
+    messages.success(request, "Simulación eliminada exitosamente.")
+    return redirect("simulacion:generar")
+
+
+def ver_simulacion(request, id):
+    simulacion = Simulacion.objects.get(id=id)
+
+    if simulacion is None:
+        messages.error(request, "No se encontró la simulación para visualizar.")
+        return redirect("simulacion:generar")
+
+
+    # Relaciones entre simulación y camiones
+    relaciones = simulacion.simulacioncamion_set.all()
+    
+    # Armamos las categorías con sus probabilidades
+    probabilidades, acumuladas = simulacion.triangular.agrupar_densidades()
+                
+    distribucion_probabilidades = zip(
+        simulacion.triangular.intervalos,
+        simulacion.triangular.continua.marcas_de_clase,
+        probabilidades,
+        acumuladas,
+    )
+
+    distribucion_probabilidades_obs = zip(
+        simulacion.triangular.continua.intervalos_sim,
+        simulacion.triangular.continua.marcas_de_clase_sim,
+        simulacion.triangular.continua.probabilidades_sim,
+        simulacion.triangular.continua.acumuladas_sim,
+    )
+
+
+
+    return render(
+        request,
+        "pages/simulacion/ver.html",
+        {
+            "simulacion": simulacion,
+            "relaciones": relaciones,
+            "distribucion_probabilidades": distribucion_probabilidades,
+            "distribucion_probabilidades_obs": distribucion_probabilidades_obs,
+        },
+    )
+
+
+def simular_distribucion(request, id):
+    # Versión mejorada con manejo de errores
+    distribucion = get_object_or_404(DistribucionBase, id=id)
+    return redirect(
+        f'{reverse("simulacion:generar")}?id_distribucion={distribucion.id}'
+    )

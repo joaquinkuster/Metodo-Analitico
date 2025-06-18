@@ -1,0 +1,152 @@
+{% extends "layouts/base.html" %}
+{% load form_tags %}
+
+{% block title %} Guardar Camión {% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Gestión de Camiones</h1>
+        <span class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">{{ camiones|length }}
+            camiones</span>
+    </div>
+
+    <!-- Mensajes flash -->
+    {% for message in messages %}
+    {% if 'success' in message.tags %}
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        {{ message }}
+    </div>
+    {% elif 'error' in message.tags %}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        {{ message }}
+    </div>
+    {% endif %}
+    {% endfor %}
+
+    <div class="row">
+        <!-- Panel de Creación -->
+        <div class="col-xl-4 col-lg-5 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Guardar camión</h6>
+                </div>
+                <div class="card-body">
+
+                    <!-- Formulario Camión -->
+                    <form method="post" action="{% url 'camion:guardar' %}">
+                        {% csrf_token %}
+
+                        <div class="row">
+
+                            <!-- Separador -->
+                            <div class="col-12 d-flex align-items-center mb-3">
+                                <span class="me-2 text-muted">Datos del camión</span>
+                                <hr class="flex-grow-1 my-0">
+                            </div>
+
+                            <!-- Datos del camión -->
+                            <div class="col-md-6 form-group">
+                                <label for="{{ camion_form.capacidad_vacas.id_for_label }}"
+                                    class="form-label font-weight-bold">
+                                    {{ camion_form.capacidad_vacas.label }}</label>
+                                {{ camion_form.capacidad_vacas|add_class:"form-control" }}
+                                {% if camion_form.capacidad_vacas.errors %}
+                                <div class="invalid-feedback d-block mb-4">
+                                    {{ camion_form.capacidad_vacas.errors.0 }}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-6 form-group">
+                                <label for="{{ camion_form.costo_chofer_km.id_for_label }}"
+                                    class="form-label font-weight-bold">
+                                    {{ camion_form.costo_chofer_km.label }}</label>
+                                {{ camion_form.costo_chofer_km|add_class:"form-control" }}
+                                {% if camion_form.costo_chofer_km.errors %}
+                                <div class="invalid-feedback d-block mb-4">
+                                    {{ camion_form.costo_chofer_km.errors.0 }}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-12 form-group">
+                                <label for="{{ camion_form.consumo_lt_km.id_for_label }}"
+                                    class="form-label font-weight-bold">
+                                    {{ camion_form.consumo_lt_km.label }}</label>
+                                {{ camion_form.consumo_lt_km|add_class:"form-control" }}
+                                {% if camion_form.consumo_lt_km.errors %}
+                                <div class="invalid-feedback d-block mb-4">
+                                    {{ camion_form.consumo_lt_km.errors.0 }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Guardar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lista de Simulaciones -->
+        <div class="col-xl-8 col-lg-7">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">Camiones guardados</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive rounded">
+                        <table class="table table-hover align-middle mb-0 p-3">
+                            <thead class="table-light text-center">
+                                <tr>
+                                    <th class="font-weight-bold">#</th>
+                                    <th>Capacidad (vacas)</th>
+                                    <th>Costo chofer ($/km)</th>
+                                    <th>Consumo combustible (L/km)</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-center">
+                                {% for c in camiones %}
+                                <tr>
+                                    <td class="font-weight-bold">{{ forloop.counter }}</td>
+                                    <td>{{ c.capacidad_vacas }} km</td>
+                                    <td>{{ c.costo_chofer_km|floatformat:2 }}</td>
+                                    <td>{{ c.consumo_lt_km|floatformat:2 }}</td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <form action="{% url 'camion:eliminar' c.id %}" method="post">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-danger btnEliminar rounded-start-0"
+                                                    title="Eliminar">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="8" class="text-center py-4">
+                                        <div class="text-muted">
+                                            <i class="bi bi-info-circle fs-4"></i>
+                                            <p class="mt-2 mb-0">No hay camiones registrados</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

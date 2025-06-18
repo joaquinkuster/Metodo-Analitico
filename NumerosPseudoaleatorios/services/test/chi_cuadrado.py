@@ -1,15 +1,5 @@
 from scipy.stats import chi2
 
-def calcular_intervalos(grupos, cantidad_intervalos: int = 10):
-    min_val = min(grupos)
-    max_val = max(grupos)
-    rango = max_val - min_val or 1  # Evita división por cero
-    
-    amplitud = rango / cantidad_intervalos
-    limites = [min_val + i * amplitud for i in range(cantidad_intervalos + 1)]
-    
-    return [(limites[i], limites[i+1]) for i in range(cantidad_intervalos)]
-
 def calcular_frecuencias(grupos, intervalos):
     n = len(grupos)
     cantidad_intervalos = len(intervalos)
@@ -39,7 +29,7 @@ def calcular_estadistico(observadas, esperadas):
 
     return dif, dif_cuad, dif_cuad_fe, estadistico
 
-def calcular_grados_libertad(cantidad_intervalos: int = 10):
+def calcular_grados_libertad(cantidad_intervalos):
     return cantidad_intervalos - 1
 
 def calcular_valor_critico(grados_libertad, significancia: float = 0.05):

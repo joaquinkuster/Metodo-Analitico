@@ -1,0 +1,238 @@
+{% extends "layouts/base.html" %}
+{% load form_tags %}
+
+{% block title %} Simulación Final Transporte {% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Modelo de Transporte</h1>
+        <span class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">{{ simulaciones|length }}
+            simulaciones</span>
+    </div>
+
+    <!-- Mensajes flash -->
+    {% for message in messages %}
+    {% if 'success' in message.tags %}
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        {{ message }}
+    </div>
+    {% elif 'error' in message.tags %}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        {{ message }}
+    </div>
+    {% endif %}
+    {% endfor %}
+
+    <div class="row">
+        <!-- Panel de Creación -->
+        <div class="col-xl-4 col-lg-5 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Generar simulación</h6>
+                </div>
+                <div class="card-body">
+
+                    <!-- Input hidden para los datos de pesos (compartido) -->
+                    <input type="hidden" name="data_pesos" id="data-pesos"
+                        value="{% for d in simulacion_form.triangular.field.queryset %}{{ d.id }}=[{% for v in d.variable_aleatoria_sim|slice:':20' %}{{ v|floatformat:2 }}{% if not forloop.last %}, {% endif %}{% endfor %}]{% if not forloop.last %};{% endif %}{% endfor %}">
+
+                    <!-- Formulario Simulación -->
+                    <form method="post" action="{% url 'simulacion:generar' %}">
+                        {% csrf_token %}
+
+                        <!-- Validaciones desde el modelo -->
+                        {% for field in simulacion_form.hidden_fields %}
+                        {% if field.errors %}
+                        <div class="invalid-feedback d-block mb-4">
+                            {{ field.errors.0 }}
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+
+                        <div class="row">
+
+                            <!-- Separador -->
+                            <div class="col-12 d-flex align-items-center mb-3">
+                                <span class="me-2 text-muted">Datos básicos</span>
+                                <hr class="flex-grow-1 my-0">
+                            </div>
+
+                            <!-- Datos básicos -->
+                            <div class="col-md-12 form-group">
+                                <label for="{{ simulacion_form.distancia.id_for_label }}"
+                                    class="form-label font-weight-bold">
+                                    {{ simulacion_form.distancia.label }}</label>
+                                {{ simulacion_form.distancia|add_class:"form-control" }}
+                                {% if simulacion_form.distancia.errors %}
+                                <div class="invalid-feedback d-block mb-4">
+                                    {{ simulacion_form.distancia.errors.0 }}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-6 form-group">
+                                <label for="{{ simulacion_form.precio_combustible.id_for_label }}"
+                                    class="form-label font-weight-bold">
+                                    {{ simulacion_form.precio_combustible.label }}</label>
+                                {{ simulacion_form.precio_combustible|add_class:"form-control" }}
+                                {% if simulacion_form.precio_combustible.errors %}
+                                <div class="invalid-feedback d-block mb-4">
+                                    {{ simulacion_form.precio_combustible.errors.0 }}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-6 form-group">
+                                <label for="{{ simulacion_form.porcentaje_ganancia.id_for_label }}"
+                                    class="form-label font-weight-bold">
+                                    {{ simulacion_form.porcentaje_ganancia.label }}</label>
+                                {{ simulacion_form.porcentaje_ganancia|add_class:"form-control" }}
+                                {% if simulacion_form.porcentaje_ganancia.errors %}
+                                <div class="invalid-feedback d-block mb-4">
+                                    {{ simulacion_form.porcentaje_ganancia.errors.0 }}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Separador -->
+                            <div class="col-12 d-flex align-items-center my-3">
+                                <span class="me-2 text-muted">Pesos de las vacas</span>
+                                <hr class="flex-grow-1 my-0">
+                            </div>
+
+                            <!-- Selección de distribución y camiones -->
+                            <div class="col-md-12 form-group"
+                                style="display: flex; flex-direction: column; align-items: center;">
+                                <div class="row mb-3"
+                                    style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                                    <label for="{{ simulacion_form.triangular.id_for_label }}"
+                                        class="form-label font-weight-bold mb-0">
+                                        {{ simulacion_form.triangular.label }}</label>
+                                    <a href="{% url 'distribucion:generar' %}?tipo_distribucion=TR"
+                                        class="btn btn-success" title="Generar distribución">
+                                        <i class="fa fa-plus" aria-hidden="true"></i>
+                                    </a>
+                                </div>
+                                {{ simulacion_form.triangular|add_class:"form-control" }}
+                                {% if simulacion_form.triangular.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ simulacion_form.triangular.errors.0 }}
+                                </div>
+                                {% endif %}
+
+                                <!-- Contenedor para mostrar los pesos -->
+                                <div id="pesos-contenedor" class="mt-2 p-2 bg-light rounded" style="display:none;">
+                                    <h6>Pesos de las vacas en kg (mostrando primeros 200 caracteres):</h6>
+                                    <div id="pesos-contenido" class="text-muted"></div>
+                                </div>
+                            </div>
+
+                            <!-- Separador -->
+                            <div class="col-12 d-flex align-items-center my-3">
+                                <span class="me-2 text-muted">Camiones asignados</span>
+                                <hr class="flex-grow-1 my-0">
+                            </div>
+
+                            <div class="col-md-12 form-group"
+                                style="display: flex; flex-direction: column; align-items: center;">
+                                <div class="row mb-3"
+                                    style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                                    <label for="{{ simulacion_form.camiones.id_for_label }}"
+                                        class="form-label font-weight-bold mb-0">
+                                        {{ simulacion_form.camiones.label }}</label>
+                                    <a href="{% url 'camion:guardar' %}" class="btn btn-success" title="Agregar camión">
+                                        <i class="fa fa-plus" aria-hidden="true"></i>
+                                    </a>
+                                </div>
+                                {{ simulacion_form.camiones|add_class:"form-control select-multiple" }}
+                                {% if simulacion_form.camiones.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ simulacion_form.camiones.errors.0 }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Simular</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lista de Simulaciones -->
+        <div class="col-xl-8 col-lg-7">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">Simulaciones generadas</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive rounded">
+                        <table class="table table-hover align-middle mb-0 p-3">
+                            <thead class="table-light text-center">
+                                <tr>
+                                    <th class="font-weight-bold">#</th>
+                                    <th>Distancia</th>
+                                    <th>Camiones</th>
+                                    <th>Pesos aleatorios</th>
+                                    <th>Peso moda</th>
+                                    <th>Peso total</th>
+                                    <th>Camión ideal</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-center">
+                                {% for s in simulaciones %}
+                                <tr>
+                                    <td class="font-weight-bold">{{ forloop.counter }}</td>
+                                    <td>{{ s.distancia }} km</td>
+                                    <td>{{ s.camiones.count }}</td>
+                                    <td>
+                                        {% for p in s.triangular.variable_aleatoria_sim|slice:":3" %}
+                                        {{ p|floatformat:2 }}{% if not forloop.last %}; {% endif %}
+                                        {% endfor %}
+                                        {% if s.triangular.variable_aleatoria_sim|length > 3 %}...{% endif %}
+                                    </td>
+                                    <td>{{ s.triangular.c|floatformat:2 }} kg</td>
+                                    <td>{{ s.peso_total|floatformat:2 }} kg</td>
+                                    <td>{{ s.camion_ideal }}</td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{% url 'simulacion:ver' s.id %}" class="btn btn-primary"
+                                                title="Ver detalles">
+                                                <i class="fas fa-eye align-middle"></i>
+                                            </a>
+                                            <form action="{% url 'simulacion:eliminar' s.id %}" method="post">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-danger btnEliminar rounded-start-0"
+                                                    title="Eliminar">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="8" class="text-center py-4">
+                                        <div class="text-muted">
+                                            <i class="bi bi-info-circle fs-4"></i>
+                                            <p class="mt-2 mb-0">No hay simulaciones registradas</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

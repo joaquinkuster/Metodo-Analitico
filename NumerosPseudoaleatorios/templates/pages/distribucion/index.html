@@ -1,0 +1,370 @@
+{% extends "layouts/base.html" %}
+{% load form_tags %}
+
+{% block title %} Distribuir Variables Aleatorias {% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Distribuciones Discretas y Continuas</h1>
+        <span class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">{{ distribuciones|length }}
+            distribuciones</span>
+    </div>
+
+    <!-- Mensajes flash -->
+    {% for message in messages %}
+    {% if 'success' in message.tags %}
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        {{ message }}
+    </div>
+    {% elif 'error' in message.tags %}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        {{ message }}
+    </div>
+    {% endif %}
+    {% endfor %}
+
+    <div class="row">
+        <!-- Panel de Generación -->
+        <div class="col-xl-4 col-lg-5 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Generar distribución</h6>
+                </div>
+                <div class="card-body">
+                    <!-- Selector de Distribución -->
+                    <div class="mb-4">
+                        <div class="btn-group w-100" role="group">
+                            <button type="button"
+                                class="btn btn-outline-primary {% if tipo_distribucion == 'BI' %}active{% endif %}"
+                                id="btnToggle1" data-toggle-target="formToggle1">
+                                Binomial
+                            </button>
+                            <button type="button"
+                                class="btn btn-outline-primary {% if tipo_distribucion == 'EXP' %}active{% endif %}"
+                                id="btnToggle2" data-toggle-target="formToggle2">
+                                Exponencial
+                            </button>
+                            <button type="button"
+                                class="btn btn-outline-primary {% if tipo_distribucion == 'TR' %}active{% endif %}"
+                                id="btnToggle3" data-toggle-target="formToggle3">
+                                Triangular
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Input hidden para los datos de secuencias (compartido) -->
+                    <input type="hidden" id="data-secuencias"
+                        value="{% for s in binomial_form.secuencia.field.queryset %}{{ s.id }}={{ s.numeros|truncatechars:200 }}{% if not forloop.last %};{% endif %}{% endfor %}">
+
+                    <!-- Formulario Binomial -->
+                    <form method="post" action="{% url 'distribucion:generar' %}" id="formToggle1"
+                        class="{% if tipo_distribucion != 'BI' %} form-inactivo {% endif %}" data-toggle-form>
+                        {% csrf_token %}
+
+                        <!-- Validaciones desde el modelo -->
+                        {% for field in binomial_form.hidden_fields %}
+                        {% if field.errors %}
+                        <div class="invalid-feedback d-block mb-4">
+                            {{ field.errors.0 }}
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+
+                        <input type="hidden" name="tipo_distribucion" value="BI">
+                        <div class="row">
+                            <div class="col-md-6 form-group">
+                                <label for="{{ binomial_form.p.id_for_label }}" class="form-label font-weight-bold">
+                                    {{ binomial_form.p.label }}</label>
+                                {{ binomial_form.p|add_class:"form-control" }}
+                                {% if binomial_form.p.errors %}
+                                <div class="invalid-feedback d-block">{{ binomial_form.p.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label for="{{ binomial_form.n.id_for_label }}" class="form-label font-weight-bold">
+                                    {{ binomial_form.n.label }}</label>
+                                {{ binomial_form.n|add_class:"form-control" }}
+                                {% if binomial_form.n.errors %}
+                                <div class="invalid-feedback d-block">{{ binomial_form.n.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <!-- Separador -->
+                            <div class="col-12 d-flex align-items-center my-3">
+                                <span class="me-2 text-muted">Números pseudoaleatorios</span>
+                                <hr class="flex-grow-1 my-0">
+                            </div>
+                            <div class="col-md-12 form-group">
+                                <label for="{{ binomial_form.secuencia.id_for_label }}"
+                                    class="form-label font-weight-bold">
+                                    {{ binomial_form.secuencia.label }}</label>
+                                {{ binomial_form.secuencia|add_class:"form-control" }}
+                                <div class="form-text text-muted">
+                                    Nota: Para que la distribución simulada se parezca a la teórica, necesitarás muchos
+                                    números aleatorios (1000+).
+                                </div>
+                                {% if binomial_form.secuencia.errors %}
+                                <div class="invalid-feedback d-block">{{ binomial_form.secuencia.errors.0 }}</div>
+                                {% endif %}
+
+                                <!-- Contenedor para mostrar los números -->
+                                <div id="numeros-secuencia" class="mt-2 p-2 bg-light rounded" style="display:none;">
+                                    <h6>Números de la secuencia (mostrando primeros 200 caracteres):</h6>
+                                    <div id="numeros-contenido" class="text-muted"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-play-circle me-2"></i>Distribuir
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Formulario Exponencial -->
+                    <form method="post" action="{% url 'distribucion:generar' %}" id="formToggle2"
+                        class="{% if tipo_distribucion != 'EXP' %} form-inactivo {% endif %}" data-toggle-form>
+                        {% csrf_token %}
+
+                        <!-- Validaciones desde el modelo -->
+                        {% for field in exponencial_form.hidden_fields %}
+                        {% if field.errors %}
+                        <div class="invalid-feedback d-block mb-4">
+                            {{ field.errors.0 }}
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+
+                        <input type="hidden" name="tipo_distribucion" value="EXP">
+                        <div class="row">
+                            <div class="col-md-12 form-group">
+                                <label for="{{ exponencial_form.tasa.id_for_label }}"
+                                    class="form-label font-weight-bold">
+                                    {{ exponencial_form.tasa.label }}</label>
+                                {{ exponencial_form.tasa|add_class:"form-control" }}
+                                {% if exponencial_form.tasa.errors %}
+                                <div class="invalid-feedback d-block">{{ exponencial_form.tasa.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <!-- Separador -->
+                            <div class="col-12 d-flex align-items-center my-3">
+                                <span class="me-2 text-muted">Números pseudoaleatorios</span>
+                                <hr class="flex-grow-1 my-0">
+                            </div>
+                            <div class="col-md-12 form-group">
+                                <label for="{{ exponencial_form.secuencia.id_for_label }}"
+                                    class="form-label font-weight-bold">
+                                    {{ exponencial_form.secuencia.label }}</label>
+                                {{ exponencial_form.secuencia|add_class:"form-control" }}
+                                <div class="form-text text-muted">
+                                    Nota: Para que la distribución simulada se parezca a la teórica, necesitarás muchos
+                                    números aleatorios (1000+).
+                                </div>
+                                {% if exponencial_form.secuencia.errors %}
+                                <div class="invalid-feedback d-block">{{ exponencial_form.secuencia.errors.0 }}</div>
+                                {% endif %}
+
+                                <!-- Contenedor para mostrar los números -->
+                                <div id="numeros-secuencia" class="mt-2 p-2 bg-light rounded" style="display:none;">
+                                    <h6>Números de la secuencia (mostrando primeros 200 caracteres):</h6>
+                                    <div id="numeros-contenido" class="text-muted"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-play-circle me-2"></i>Distribuir
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Formulario Triangular -->
+                    <form method="post" action="{% url 'distribucion:generar' %}" id="formToggle3"
+                        class="{% if tipo_distribucion != 'TR' %} form-inactivo {% endif %}" data-toggle-form>
+                        {% csrf_token %}
+
+                        <!-- Validaciones desde el modelo -->
+                        {% for field in triangular_form.hidden_fields %}
+                        {% if field.errors %}
+                        <div class="invalid-feedback d-block mb-4">
+                            {{ field.errors.0 }}
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+
+                        <input type="hidden" name="tipo_distribucion" value="TR">
+
+                        <div class="row">
+
+                            <!-- Parámetros de la distribución -->
+                            <div class="col-md-4 form-group">
+                                <label for="{{ triangular_form.a.id_for_label }}" class="form-label font-weight-bold">
+                                    {{ triangular_form.a.label }}</label>
+                                {{ triangular_form.a|add_class:"form-control" }}
+                                {% if triangular_form.a.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ triangular_form.a.errors.0 }}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-4 form-group">
+                                <label for="{{ triangular_form.c.id_for_label }}" class="form-label font-weight-bold">
+                                    {{ triangular_form.c.label }}</label>
+                                {{ triangular_form.c|add_class:"form-control" }}
+                                {% if triangular_form.c.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ triangular_form.c.errors.0 }}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-4 form-group">
+                                <label for="{{ triangular_form.b.id_for_label }}" class="form-label font-weight-bold">
+                                    {{ triangular_form.b.label }}</label>
+                                {{ triangular_form.b|add_class:"form-control" }}
+                                {% if triangular_form.b.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ triangular_form.b.errors.0 }}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Separador -->
+                            <div class="col-12 d-flex align-items-center my-3">
+                                <span class="me-2 text-muted">Números pseudoaleatorios</span>
+                                <hr class="flex-grow-1 my-0">
+                            </div>
+
+                            <!-- Selección de Secuencia -->
+                            <div class="col-md-12 form-group">
+                                <label for="{{ triangular_form.secuencia.id_for_label }}"
+                                    class="form-label font-weight-bold">
+                                    {{ triangular_form.secuencia.label }}</label>
+                                {{ triangular_form.secuencia|add_class:"form-control" }}
+                                <div class="form-text text-muted">
+                                    Nota: Para que la distribución simulada se parezca a la teórica, necesitarás muchos
+                                    números aleatorios (1000+).
+                                </div>
+                                {% if triangular_form.secuencia.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ triangular_form.secuencia.errors.0 }}
+                                </div>
+                                {% endif %}
+
+                                <!-- Contenedor para mostrar los números -->
+                                <div id="numeros-secuencia" class="mt-2 p-2 bg-light rounded" style="display:none;">
+                                    <h6>Números de la secuencia (mostrando primeros 200 caracteres):</h6>
+                                    <div id="numeros-contenido" class="text-muted"></div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-calculator me-2"></i>Distribuir
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lista de Distribuciones -->
+        <div class="col-xl-8 col-lg-7">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Distribuciones generadas</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive rounded">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light text-center">
+                                <tr>
+                                    <th class="font-weight-bold">#</th>
+                                    <th>Tipo</th>
+                                    <th>Variable aleatoria</th>
+                                    <th>f(x)</th>
+                                    <th>F(x)</th>
+                                    <th>E(x)</th>
+                                    <th>V(x)</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-center">
+                                {% for d in distribuciones %}
+                                <tr>
+                                    <td class="font-weight-bold">{{ forloop.counter }}</td>
+                                    <td>
+                                        <span
+                                            class="btn btn-sm 
+                                                {% if d.tipo == 'BI' %}btn-info{% elif d.tipo == 'EXP' %}btn-warning{% else %}btn-success{% endif %}">
+                                            {{ d.get_tipo_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="d-inline-block text-truncate">
+                                            {% if d.tipo == 'EXP' %}
+                                            {% for v in d.variable_aleatoria|slice:":3" %}
+                                            {{ v|floatformat:1 }}{% if not forloop.last %}; {% endif %}
+                                            {% endfor %}
+                                            {% if d.variable_aleatoria|length > 3 %}...{% endif %}
+                                            {% else %}
+                                            {{ d.variable_aleatoria|join:", "|truncatechars:15 }}
+                                            {% endif %}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="d-inline-block text-truncate">
+                                            {% for v in d.probabilidades|slice:":3" %}
+                                            {{ v|floatformat:4 }}{% if not forloop.last %}; {% endif %}
+                                            {% endfor %}
+                                            {% if d.probabilidades|length > 3 %}...{% endif %}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="d-inline-block text-truncate">
+                                            {% for v in d.acumuladas|slice:":3" %}
+                                            {{ v|floatformat:4 }}{% if not forloop.last %}; {% endif %}
+                                            {% endfor %}
+                                            {% if d.acumuladas|length > 3 %}...{% endif %}
+                                        </span>
+                                    </td>
+                                    <td>{{ d.esperanza|floatformat:2 }}</td>
+                                    <td>{{ d.varianza|floatformat:2 }}</td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{% url 'distribucion:ver' d.id %}" class="btn btn-primary"
+                                                title="Ver">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <form action="{% url 'distribucion:eliminar' d.id %}" method="post">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-danger btnEliminar rounded-start-0"
+                                                    title="Eliminar">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="8" class="text-center py-4 text-muted">
+                                        <i class="bi bi-info-circle fs-4"></i>
+                                        <p class="mt-2 mb-0">No hay distribuciones registradas</p>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

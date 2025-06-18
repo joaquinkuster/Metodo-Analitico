@@ -2,7 +2,8 @@ def separar_digitos(numeros):
     digitos = []
     for numero in numeros:
         for d in str(numero):
-            digitos.append(int(d))
+            if d.isdigit():
+                digitos.append(int(d))
     return digitos
 
 def agrupar_por_digitos(numeros, n):
@@ -15,3 +16,15 @@ def agrupar_por_digitos(numeros, n):
             numero_str += str(digito)
         grupos.append(int(numero_str))
     return grupos
+
+def convertir_en_probabilidad(x, max_valor):
+    x = abs(float(x))
+    x_normalizado = x / max_valor
+    if x_normalizado >= 1:
+        x_normalizado = 0.99999  # Evita u=1
+    elif x_normalizado == 0:
+        x_normalizado = 0.00001  # Evita u=0
+    return x_normalizado
+
+def normalizar(li, Xn, m, ls):
+    return round(li + (Xn / m) * (ls - li), 2)

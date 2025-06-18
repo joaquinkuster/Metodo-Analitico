@@ -4,31 +4,34 @@
 {% block title %} Testear Números Pseudoaleatorios {% endblock %}
 
 {% block body %}
-<div class="container-fluid py-4">
+<div class="container-fluid">
+
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Test de Aleatoriedad</h1>
+        <span class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">{{ tests|length }}
+            tests</span>
+    </div>
 
     <!-- Mensajes flash -->
     {% for message in messages %}
     {% if 'success' in message.tags %}
     <div class="alert alert-success alert-dismissible fade show" role="alert">
         {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
     {% elif 'error' in message.tags %}
     <div class="alert alert-danger alert-dismissible fade show" role="alert">
         {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
     {% endif %}
     {% endfor %}
 
-    <div class="row g-4">
+    <div class="row">
         <!-- Panel de Test -->
-        <div class="col-xxl-4 col-lg-6">
-            <div class="card border-0 shadow-lg">
-                <div class="card-header bg-primary text-white">
-                    <h2 class="h5 mb-0">
-                        <i class="bi bi-calculator me-2"></i>Testear aleatoriedad
-                    </h2>
+        <div class="col-xl-4 col-lg-5 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Testear aleatoriedad</h6>
                 </div>
                 <div class="card-body">
                     <!-- Selector de Método -->
@@ -36,27 +39,42 @@
                         <div class="btn-group w-100" role="group">
                             <button type="button"
                                 class="btn btn-outline-primary {% if tipo_tester is None or tipo_tester == 'CC' %} active {% endif %}"
-                                id="btnToggle1">
+                                id="btnToggle1" data-toggle-target="formToggle1">
                                 Chi-Cuadrado
                             </button>
                             <button type="button"
                                 class="btn btn-outline-primary {% if tipo_tester == 'PK' %} active {% endif %}"
-                                id="btnToggle2">
+                                id="btnToggle2" data-toggle-target="formToggle2">
                                 Poker
                             </button>
                         </div>
                     </div>
 
+                    <!-- Input hidden para los datos de secuencias (compartido) -->
+                    <input type="hidden" id="data-secuencias"
+                        value="{% for s in chi_cuadrado_form.secuencia.field.queryset %}{{ s.id }}={{ s.numeros|truncatechars:200 }}{% if not forloop.last %};{% endif %}{% endfor %}">
+
                     <!-- Formulario Chi-Cuadrado -->
                     <form method="post" action="{% url 'test:generar' %}" id="formToggle1"
-                        class="{% if tipo_tester is not None and tipo_tester != 'CC' %} form-inactivo {% endif %}">
+                        class="{% if tipo_tester is not None and tipo_tester != 'CC' %} form-inactivo {% endif %}"
+                        data-toggle-form>
                         {% csrf_token %}
+
+                        <!-- Validaciones desde el modelo -->
+                        {% for field in chi_cuadrado_form.hidden_fields %}
+                        {% if field.errors %}
+                        <div class="invalid-feedback d-block mb-4">
+                            {{ field.errors.0 }}
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+
                         <input type="hidden" name="tipo_tester" value="CC">
-                        <div class="row g-3">
+                        <div class="row">
                             <!-- Nivel de Significancia -->
-                            <div class="col-md-12 mb-2">
+                            <div class="col-md-12 form-group">
                                 <label for="{{ chi_cuadrado_form.significancia.id_for_label }}"
-                                    class="form-label fw-bold">
+                                    class="form-label font-weight-bold">
                                     {{ chi_cuadrado_form.significancia.label }}</label>
                                 {{ chi_cuadrado_form.significancia|add_class:"form-control" }}
                                 {% if chi_cuadrado_form.significancia.errors %}
@@ -70,17 +88,24 @@
                                 <hr class="flex-grow-1 my-0">
                             </div>
                             <!-- Selección de Secuencia -->
-                            <div class="col-md-12 mt-0">
-                                <label for="{{ chi_cuadrado_form.secuencia.id_for_label }}" class="form-label fw-bold">
+                            <div class="col-md-12 form-group">
+                                <label for="{{ chi_cuadrado_form.secuencia.id_for_label }}"
+                                    class="form-label font-weight-bold">
                                     {{ chi_cuadrado_form.secuencia.label }}</label>
-                                {{ chi_cuadrado_form.secuencia|add_class:"form-select" }}
+                                {{ chi_cuadrado_form.secuencia|add_class:"form-control" }}
                                 {% if chi_cuadrado_form.secuencia.errors %}
                                 <div class="invalid-feedback d-block">{{ chi_cuadrado_form.secuencia.errors.0 }}</div>
                                 {% endif %}
+
+                                <!-- Contenedor para mostrar los números -->
+                                <div id="numeros-secuencia" class="mt-2 p-2 bg-light rounded" style="display:none;">
+                                    <h6>Números de la secuencia (mostrando primeros 200 caracteres):</h6>
+                                    <div id="numeros-contenido" class="text-muted"></div>
+                                </div>
                             </div>
                         </div>
-                        <div class="d-grid mt-4">
-                            <button type="submit" class="btn btn-success">
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
                                 <i class="bi bi-play-circle me-2"></i>Testear
                             </button>
                         </div>
@@ -88,13 +113,25 @@
 
                     <!-- Formulario Poker -->
                     <form method="post" action="{% url 'test:generar' %}" id="formToggle2"
-                        class="{% if tipo_tester is None or tipo_tester != 'PK' %} form-inactivo {% endif %}">
+                        class="{% if tipo_tester is None or tipo_tester != 'PK' %} form-inactivo {% endif %}"
+                        data-toggle-form>
                         {% csrf_token %}
+
+                        <!-- Validaciones desde el modelo -->
+                        {% for field in poker_form.hidden_fields %}
+                        {% if field.errors %}
+                        <div class="invalid-feedback d-block mb-4">
+                            {{ field.errors.0 }}
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+
                         <input type="hidden" name="tipo_tester" value="PK">
-                        <div class="row g-3">
+                        <div class="row">
                             <!-- Nivel de Significancia -->
-                            <div class="col-md-12 mb-2">
-                                <label for="{{ poker_form.significancia.id_for_label }}" class="form-label fw-bold">
+                            <div class="col-md-12 form-group">
+                                <label for="{{ poker_form.significancia.id_for_label }}"
+                                    class="form-label font-weight-bold">
                                     {{ poker_form.significancia.label }}</label>
                                 {{ poker_form.significancia|add_class:"form-control" }}
                                 {% if poker_form.significancia.errors %}
@@ -107,18 +144,25 @@
                                 <hr class="flex-grow-1 my-0">
                             </div>
                             <!-- Selección de Secuencia -->
-                            <div class="col-md-12 mt-0">
-                                <label for="{{ poker_form.secuencia.id_for_label }}" class="form-label fw-bold">
+                            <div class="col-md-12 form-group">
+                                <label for="{{ poker_form.secuencia.id_for_label }}"
+                                    class="form-label font-weight-bold">
                                     {{ poker_form.secuencia.label }}</label>
-                                {{ poker_form.secuencia|add_class:"form-select" }}
+                                {{ poker_form.secuencia|add_class:"form-control" }}
                                 {% if poker_form.secuencia.errors %}
                                 <div class="invalid-feedback d-block">{{ poker_form.secuencia.errors.0 }}</div>
                                 {% endif %}
+
+                                <!-- Contenedor para mostrar los números -->
+                                <div id="numeros-secuencia" class="mt-2 p-2 bg-light rounded" style="display:none;">
+                                    <h6>Números de la secuencia (mostrando primeros 200 caracteres):</h6>
+                                    <div id="numeros-contenido" class="text-muted"></div>
+                                </div>
                             </div>
 
                         </div>
-                        <div class="d-grid mt-4">
-                            <button type="submit" class="btn btn-success">
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
                                 <i class="bi bi-play-circle me-2"></i>Testear
                             </button>
                         </div>
@@ -128,22 +172,17 @@
         </div>
 
         <!-- Lista de Tests -->
-        <div class="col-xxl-8 col-lg-6">
-            <div class="card border-0 shadow-lg h-100">
-                <div class="card-header bg-primary text-white">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h2 class="h5 mb-0">
-                            <i class="bi bi-list-ol me-2"></i>Tests generados
-                        </h2>
-                        <span class="badge bg-white text-primary">{{ tests|length }} registros</span>
-                    </div>
+        <div class="col-xl-8 col-lg-7">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Tests generados</h6>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive rounded">
                         <table class="table table-hover align-middle mb-0 p-3">
                             <thead class="table-light text-center">
                                 <tr>
-                                    <th class="fw-bold">#</th>
+                                    <th class="font-weight-bold">#</th>
                                     <th>Método</th>
                                     <th>Significancia</th>
                                     <th>Observadas</th>
@@ -157,10 +196,10 @@
                             <tbody class="text-center">
                                 {% for t in tests %}
                                 <tr>
-                                    <td class="fw-bold">{{ forloop.counter }}</td>
-                                    <td>
+                                    <td class="font-weight-bold">{{ forloop.counter }}</td>
+                                    <td class="text-nowrap">
                                         <span
-                                            class="badge {% if t.tipo == 'CC' %}bg-info{% else %}bg-warning{% endif %}">
+                                            class="btn btn-sm {% if t.tipo == 'CC' %}btn-info{% else %}btn-warning{% endif %}">
                                             {{ t.get_tipo_display }}
                                         </span>
                                     </td>
@@ -182,11 +221,9 @@
                                     </td>
                                     <td>
                                         {% if t.aprobado %}
-                                        <span class="badge bg-success"><i class="bi bi-check-circle-fill"></i>
-                                            Aprobado</span>
+                                        <span class="btn btn-sm btn-success">Aprobado</span>
                                         {% else %}
-                                        <span class="badge bg-danger"><i class="bi bi-x-circle-fill"></i>
-                                            Rechazado</span>
+                                        <span class="btn btn-sm btn-danger">Rechazado</span>
                                         {% endif %}
                                     </td>
                                     <td>{{ t.pvalor|floatformat:6 }}</td>
@@ -224,4 +261,5 @@
         </div>
     </div>
 </div>
+
 {% endblock %}

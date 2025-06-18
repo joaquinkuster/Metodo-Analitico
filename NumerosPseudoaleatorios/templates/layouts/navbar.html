@@ -1,59 +1,44 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm fixed-top">
-    <div class="container">
-        <a class="navbar-brand d-flex align-items-center" href="{% url 'index' %}">
-            <span class="fw-bold fs-5">G02</span>
-            <span class="mx-2">|</span>
-            <span class="fs-6">2025 MS - Método Analítico</span>
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarFunc">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarFunc">
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item">
-                    <a class="nav-link px-3 {% if request.path == '/' %}active fw-bold{% endif %}"
-                        href="{% url 'index' %}">
-                        <i class="bi bi-house-door me-1"></i> Inicio
-                    </a>
-                </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle px-3" href="#" id="navbarDropdown" role="button"
-                        data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-gear me-1"></i> Funciones
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
-                        <li>
-                            <a class="dropdown-item d-flex align-items-center {% if request.path == 'generador/' %}active bg-primary{% endif %}"
-                                href="{% url 'generador:index' %}">
-                                <i class="bi bi-123 me-2"></i> Generar números
-                            </a>
-                        </li>
-                        <li>
-                            <hr class="dropdown-divider">
-                        </li>
-                        <li>
-                            <a class="dropdown-item d-flex align-items-center {% if request.path == '/testear' %}active bg-primary{% endif %}"
-                                href="{% url 'test:generar' %}">
-                                <i class="bi bi-clipboard-check me-2"></i> Testear aleatoriedad
-                            </a>
-                        </li>
-                        <hr class="dropdown-divider">
-                        <li>
-                            <a class="dropdown-item d-flex align-items-center {% if request.path == '/distribucion/generar' %}active bg-primary{% endif %}"
-                                href="{% url 'distribucion:generar' %}">
-                                <i class="bi bi-bar-chart-line me-2"></i> Ver distribuciones
-                            </a>
-                        </li>
-                        <hr class="dropdown-divider">
-                        <li>
-                            <a class="dropdown-item d-flex align-items-center {% if request.path == '/distribucion/ejemplos/menu' %}active bg-primary{% endif %}"
-                                href="{% url 'distribucion:ejemplos:menu' %}">
-                                <i class="bi bi-bar-chart-line me-2"></i> Ejemplos de distribución
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-            </ul>
+<!-- Topbar -->
+<nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+
+    <!-- Sidebar Toggle (Topbar) -->
+    <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+        <i class="fa fa-bars"></i>
+    </button>
+
+    <!-- Topbar Search -->
+    <form class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
+        <div class="input-group">
+            <input type="text" class="form-control bg-light border-0 small" placeholder="Buscar para..."
+                aria-label="Search" aria-describedby="basic-addon2">
+            <div class="input-group-append">
+                <button class="btn btn-primary" type="button">
+                    <i class="fas fa-search fa-sm"></i>
+                </button>
+            </div>
         </div>
-    </div>
+    </form>
+
+    <!-- Topbar Navbar -->
+    <ul class="navbar-nav ml-auto">
+
+        <!-- Nav Item - Alerts -->
+        <li class="nav-item dropdown no-arrow mx-1">
+            <a class="nav-link dropdown-toggle" href="https://gitlab.com/grupo25900314/modelo-y-simulacion.git" target="_blank">
+                <i class="fab fa-gitlab fa-fw"></i>
+            </a>
+        </li>
+
+        <div class="topbar-divider d-none d-sm-block"></div>
+
+        <!-- Nav Item - User Information -->
+        <li class="nav-item dropdown no-arrow">
+            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown"
+                aria-haspopup="true" aria-expanded="false">
+                <span class="mr-2 d-none d-lg-inline text-gray-600 font-weight-bold">Método Analítico</span>
+            </a>
+        </li>
+    </ul>
+
 </nav>
+<!-- End of Topbar -->

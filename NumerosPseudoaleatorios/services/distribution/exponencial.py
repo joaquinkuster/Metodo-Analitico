@@ -1,76 +1,59 @@
 import math
-
-def separar_digitos(numeros):
-    digitos = []
-    for numero in numeros:
-        numero_str = str(abs(int(numero)))  # Por si hay negativos o floats
-        for d in numero_str:
-            digitos.append(int(d))
-    return digitos
-
-def normalizar_numero(x):
-    x = abs(int(x))  
-    digitos = len(str(x))
-    return x / (10 ** digitos)
+from .. import utils
+from . import marcas_de_clase
 
 
-def calcular_probabilidades(tasa):
-    valores_x_simulacion = []
-    valores_probabilidad = []
-    valores_acumulados = []
+def teorica(tasa):
+
+    variable_aleatoria = []
+    densidades = []
+    acumuladas = []
     suma_acumulada = 0
-    
+
     umbral = 0.99
     incremento = 0.1
     x = 0
-    
-    while suma_acumulada < umbral:
-        valores_x_simulacion.append(x)
-        prob = tasa * math.exp(-tasa * x)
-        valores_probabilidad.append(prob)
-        suma_acumulada = 1 - math.exp(-tasa * x)
-        valores_acumulados.append(suma_acumulada)
-        x += incremento
 
-    return valores_x_simulacion, valores_probabilidad, valores_acumulados
+    # Generar puntos x hasta alcanzar el umbral de probabilidad acumulada
+    while suma_acumulada < umbral:
+        variable_aleatoria.append(x)
+        densidades.append(tasa * math.exp(-tasa * x))
+        suma_acumulada = 1 - math.exp(-tasa * x)
+        acumuladas.append(suma_acumulada)
+        x += incremento
+        
+    # Agrupar en intervalos
+    k = marcas_de_clase.calcular_cantidad_intervalos(len(variable_aleatoria))
+    intervalos = marcas_de_clase.calcular_intervalos(variable_aleatoria, k)
+    marcas = marcas_de_clase.calcular(intervalos)
+
+    return intervalos, marcas, variable_aleatoria, densidades, acumuladas
+
+
+def simular(tasa, numeros, x_max):
+    # Convertir a números uniformes y calcular el tiempo aleatorio
+    variable_aleatoria = []
+
+    for n in numeros:
+        u = utils.convertir_en_probabilidad(n, max(numeros))
+        x = (
+            -math.log(1 - u) / tasa
+        )  # Transformar números aleatorios a tiempos (x) usando la inversa
+        if x > x_max or x in variable_aleatoria:
+            continue
+        variable_aleatoria.append(x)
+
+    variable_aleatoria.sort()
+
+    # Calcular las densidades de probabilidades
+    intervalos, marcas, densidades, acumuladas = marcas_de_clase.calcular_densidades(variable_aleatoria)
+
+    return intervalos, marcas, variable_aleatoria, densidades, acumuladas
+
 
 def calcular_esperanza(tasa):
     return 1 / tasa
 
+
 def calcular_varianza(tasa):
     return 1 / math.pow(tasa, 2)
-
-def calcular_exponencial_desde_datos(numeros_aleatorios, tasa):
-    # 1. Calcular x simulados usando la inversa
-    valores_x_simulacion = []
-    
-    numeros_aleatorios = separar_digitos(numeros_aleatorios)
-    
-    for u in numeros_aleatorios:
-        u = normalizar_numero(u)
-        if u == 1:
-            u = 0.99999
-        x = -math.log(1 - u) / tasa
-        valores_x_simulacion.append(x)
-
-    # 2. Ordenar los x simulados para hacer bien la acumulada empírica
-    valores_x_simulacion.sort()
-
-    # 3. Calcular las probabilidades (frecuencias relativas)
-    valores_probabilidad = [tasa * math.exp(-tasa * x) for x in valores_x_simulacion]
-
-    # 4. Calcular la acumulada empírica (ECDF)
-    n = len(valores_x_simulacion)
-    valores_acumulados = [(i + 1) / n for i in range(n)]
-
-    # 5. Redondear si querés cortar decimales
-    x_redondeados = [round(x, 5) for x in valores_x_simulacion]
-    prob_redondeadas = [round(p, 5) for p in valores_probabilidad]
-    acum_redondeadas = [round(a, 5) for a in valores_acumulados]
-
-    # 6. Debug
-    print("frecuencia relativa (agrupada): ", prob_redondeadas)
-    print("valores acumulados simulacion (agrupados): ", acum_redondeadas)
-    print("valores x (agrupados): ", x_redondeados)
-
-    return x_redondeados, prob_redondeadas, acum_redondeadas
