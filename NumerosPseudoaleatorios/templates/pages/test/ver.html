@@ -102,6 +102,9 @@
                                     <thead class="table-light">
                                         <tr>
                                             <th scope="col">Categoría</th>
+                                            {% if test.tipo == 'PK' %}
+                                            <th scope="col">Probabilidades teóricas</th>
+                                            {% endif %}
                                             <th scope="col">Frecuencia observada (fo)</th>
                                             <th scope="col">Frecuencia esperada (fe)</th>
                                             <th scope="col">fo - fe</th>
@@ -110,12 +113,15 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {% for cat, fo, fe, dif, dif_cuad, dif_cuad_fe in categorias_con_frecuencias %}
+                                        {% for cat, prob, fo, fe, dif, dif_cuad, dif_cuad_fe in categorias_con_frecuencias %}
                                         <tr>
                                             {% if test.tipo == 'CC' %}
                                             <td>[{{ cat.0|floatformat:2 }} - {{ cat.1|floatformat:2 }})</td>
                                             {% else %}
                                             <td>{{ cat }}</td>
+                                            {% endif %}
+                                            {% if test.tipo == 'PK' %}
+                                            <td>{{ prob }}</td>
                                             {% endif %}
                                             <td>{{ fo }}</td>
                                             <td>{{ fe|floatformat:2 }}</td>

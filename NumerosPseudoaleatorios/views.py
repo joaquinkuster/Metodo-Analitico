@@ -181,6 +181,11 @@ def ver_test(request, id):
     # Preparar datos para la tabla de frecuencias
     categorias_con_frecuencias = zip(
         categorias,
+        (
+            poker.obtener_probabilidades_teoricas().values()
+            if test.tipo == TipoTester.POKER
+            else [None] * len(categorias)
+        ),  # Para mostrar las probabilidades teóricas del poker
         test.frecuencias_observadas,
         test.frecuencias_esperadas,
         test.diferencia,
@@ -420,7 +425,9 @@ def generar_simulacion(request):
 
                 # Crear las relaciones intermedias
                 for camion in simulacion_form.cleaned_data["camiones"]:
-                    SimulacionCamion.objects.create(simulacion=simulacion, camion=camion)
+                    SimulacionCamion.objects.create(
+                        simulacion=simulacion, camion=camion
+                    )
 
                 # Procesar camiones y determinar el ideal
                 simulacion.determinar_camion_ideal()
@@ -466,13 +473,12 @@ def ver_simulacion(request, id):
         messages.error(request, "No se encontró la simulación para visualizar.")
         return redirect("simulacion:generar")
 
-
     # Relaciones entre simulación y camiones
     relaciones = simulacion.simulacioncamion_set.all()
-    
+
     # Armamos las categorías con sus probabilidades
     probabilidades, acumuladas = simulacion.triangular.agrupar_densidades()
-                
+
     distribucion_probabilidades = zip(
         simulacion.triangular.intervalos,
         simulacion.triangular.continua.marcas_de_clase,
@@ -486,8 +492,6 @@ def ver_simulacion(request, id):
         simulacion.triangular.continua.probabilidades_sim,
         simulacion.triangular.continua.acumuladas_sim,
     )
-
-
 
     return render(
         request,
