@@ -43,7 +43,7 @@ def simular(tasa, numeros, x_max):
             continue
         variable_aleatoria.append(x)
 
-    variable_aleatoria.sort()
+    # variable_aleatoria.sort()
 
     # Calcular las densidades de probabilidades
     intervalos, marcas, densidades, acumuladas = marcas_de_clase.calcular_densidades(variable_aleatoria)

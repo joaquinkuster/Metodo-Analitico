@@ -251,7 +251,7 @@
                                 {% for s in secuencias %}
                                 <tr>
                                     <td class="font-weight-bold">{{ forloop.counter }}</td>
-                                    <td>
+                                    <td class="text-nowrap">
                                         <span
                                             class="btn btn-sm {% if s.tipo == 'VN' %}btn-info{% else %}btn-warning{% endif %}">
                                             {{ s.get_tipo_display }}

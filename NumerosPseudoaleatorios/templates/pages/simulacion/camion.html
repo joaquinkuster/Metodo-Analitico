@@ -49,13 +49,13 @@
 
                             <!-- Datos del camión -->
                             <div class="col-md-6 form-group">
-                                <label for="{{ camion_form.capacidad_vacas.id_for_label }}"
+                                <label for="{{ camion_form.capacidad_kg.id_for_label }}"
                                     class="form-label font-weight-bold">
-                                    {{ camion_form.capacidad_vacas.label }}</label>
-                                {{ camion_form.capacidad_vacas|add_class:"form-control" }}
-                                {% if camion_form.capacidad_vacas.errors %}
+                                    {{ camion_form.capacidad_kg.label }}</label>
+                                {{ camion_form.capacidad_kg|add_class:"form-control" }}
+                                {% if camion_form.capacidad_kg.errors %}
                                 <div class="invalid-feedback d-block mb-4">
-                                    {{ camion_form.capacidad_vacas.errors.0 }}
+                                    {{ camion_form.capacidad_kg.errors.0 }}
                                 </div>
                                 {% endif %}
                             </div>
@@ -105,7 +105,7 @@
                             <thead class="table-light text-center">
                                 <tr>
                                     <th class="font-weight-bold">#</th>
-                                    <th>Capacidad (vacas)</th>
+                                    <th>Capacidad (kg)</th>
                                     <th>Costo chofer ($/km)</th>
                                     <th>Consumo combustible (L/km)</th>
                                     <th>Acciones</th>
@@ -115,9 +115,9 @@
                                 {% for c in camiones %}
                                 <tr>
                                     <td class="font-weight-bold">{{ forloop.counter }}</td>
-                                    <td>{{ c.capacidad_vacas }} km</td>
-                                    <td>{{ c.costo_chofer_km|floatformat:2 }}</td>
-                                    <td>{{ c.consumo_lt_km|floatformat:2 }}</td>
+                                    <td>{{ c.capacidad_kg }} kg</td>
+                                    <td>${{ c.costo_chofer_km|floatformat:2 }}</td>
+                                    <td>{{ c.consumo_lt_km|floatformat:2 }} lt</td>
                                     <td>
                                         <div class="btn-group btn-group-sm">
                                             <form action="{% url 'camion:eliminar' c.id %}" method="post">

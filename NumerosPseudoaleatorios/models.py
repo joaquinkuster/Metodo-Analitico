@@ -44,7 +44,9 @@ def validar_numeros(numeros, campo):
 
 
 def validar_intervalos(intervalos, campo):
-    if not (all(isinstance(li, float) and isinstance(ls, float) for li, ls in intervalos)):
+    if not (
+        all(isinstance(li, float) and isinstance(ls, float) for li, ls in intervalos)
+    ):
         raise ValidationError({campo: "Los intervalos de tipo flotante."})
 
 
@@ -692,10 +694,10 @@ class Triangular(Continua):
 
 
 class Camion(models.Model):
-    capacidad_vacas = models.PositiveIntegerField(
+    capacidad_kg = models.PositiveIntegerField(
         validators=[
             ValidadorRango(
-                1, 1000, "La capacidad del camión debe ser entre 1 y 1000 vacas."
+                1, 30000, "La capacidad del camión debe ser entre 1 y 30.000 kg."
             )
         ]
     )
@@ -723,7 +725,7 @@ class Camion(models.Model):
         ordering = ["-fecha_creacion"]
 
     def __str__(self):
-        return f"Camión {self.id} - Capacidad: {self.capacidad_vacas}"
+        return f"Camión {self.id} - Capacidad: {self.capacidad_kg}"
 
     def save(self, *args, **kwargs):
 
@@ -825,17 +827,41 @@ class SimulacionCamion(models.Model):
     costo_choferes = models.FloatField(editable=False, default=0)
     costo_traslado = models.FloatField(editable=False, default=0)
     precio_por_kg = models.FloatField(editable=False, default=0)
+    cargas = models.JSONField(default=list)  # Cargas por viaje
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+
+    def calcular_cargas(self):
+        """
+        Calcula las cargas por viaje basándose en el peso total y la capacidad del camión.
+        """
+        self.cargas = []
+        peso_acumulado = 0
+
+        for peso in self.simulacion.triangular.variable_aleatoria_sim:
+            if peso_acumulado + peso <= self.camion.capacidad_kg:
+                peso_acumulado += peso
+            else:
+                # Se llena el camión y se inicia una nueva carga
+                if peso_acumulado > 0:
+                    self.cargas.append(peso_acumulado)
+                peso_acumulado = peso
+
+        # Agregar la última carga si quedó algo pendiente
+        if peso_acumulado > 0:
+            self.cargas.append(peso_acumulado)
+
+        self.cargas.sort(reverse=True)  # Ordenar cargas de mayor a menor
 
     def save(self, *args, **kwargs):
 
         # Si es un nuevo registro
         if self._state.adding:
 
+            # Calcular las cargas por viaje
+            self.calcular_cargas()
+
             # Número de viajes necesarios
-            self.cantidad_viajes = math.ceil(
-                self.simulacion.triangular.secuencia.cantidad
-                / self.camion.capacidad_vacas
-            )
+            self.cantidad_viajes = len(self.cargas)
 
             # Cálculo de combustible total (lt) y su costo
             litros_totales = (
