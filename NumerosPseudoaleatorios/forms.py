@@ -481,15 +481,15 @@ class TriangularForm(forms.ModelForm):
 class CamionForm(forms.ModelForm):
     class Meta:
         model = Camion
-        fields = ["capacidad_vacas", "costo_chofer_km", "consumo_lt_km"]
+        fields = ["capacidad_kg", "costo_chofer_km", "consumo_lt_km"]
         widgets = {
-            "capacidad_vacas": forms.NumberInput(
+            "capacidad_kg": forms.NumberInput(
                 attrs={
                     "min": 1,
-                    "max": 1000,
+                    "max": 300000,
                     "step": 1,
-                    "value": 25,
-                    "placeholder": "Capacidad en vacas",
+                    "value": 25000,
+                    "placeholder": "Capacidad en kg",
                     "required": True,
                 }
             ),
@@ -515,7 +515,7 @@ class CamionForm(forms.ModelForm):
             ),
         }
         labels = {
-            "capacidad_vacas": "Capacidad (vacas)",
+            "capacidad_kg": "Capacidad (kg)",
             "costo_chofer_km": "Costo chofer ($/km)",
             "consumo_lt_km": "Consumo combustible (L/100km)",
         }
